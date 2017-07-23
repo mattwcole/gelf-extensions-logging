@@ -5,6 +5,7 @@ namespace Gelf.Extensions.Logging
 {
     public class GelfLoggerProvider : ILoggerProvider
     {
+        private readonly GelfLoggerOptions _options;
         private readonly GelfMessageProcessor _messageProcessor;
         private readonly IDisposable _gelfClient;
 
@@ -12,6 +13,7 @@ namespace Gelf.Extensions.Logging
         {
             var gelfClient = new UdpGelfClient(options);
 
+            _options = options;
             _gelfClient = gelfClient;
             _messageProcessor = new GelfMessageProcessor(gelfClient);
             _messageProcessor.Start();
@@ -19,7 +21,7 @@ namespace Gelf.Extensions.Logging
 
         public ILogger CreateLogger(string categoryName)
         {
-            return new GelfLogger(_messageProcessor);
+            return new GelfLogger(_messageProcessor, _options);
         }
 
         public void Dispose()

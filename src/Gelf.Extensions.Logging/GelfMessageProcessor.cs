@@ -14,7 +14,7 @@ namespace Gelf.Extensions.Logging
         public GelfMessageProcessor(IGelfClient gelfClient)
         {
             _gelfClient = gelfClient;
-            _messageBuffer = new BufferBlock<GelfMessage>();     // TODO: Limit capacity?
+            _messageBuffer = new BufferBlock<GelfMessage>();
         }
 
         public void Start()
@@ -26,7 +26,6 @@ namespace Gelf.Extensions.Logging
         {
             while (!_messageBuffer.Completion.IsCompleted)
             {
-                // TODO: What happens when completed?
                 var message = await _messageBuffer.ReceiveAsync().ConfigureAwait(false);
 
                 try
@@ -43,7 +42,7 @@ namespace Gelf.Extensions.Logging
         public void Stop()
         {
             _messageBuffer.Complete();
-            Task.WaitAll(_messageBuffer.Completion, _processorTask);     // TODO: Timeouts, exceptions.
+            Task.WaitAll(_messageBuffer.Completion, _processorTask);
         }
 
         public void SendMessage(GelfMessage message)

@@ -13,10 +13,10 @@ namespace Gelf.Extensions.Logging
     public class UdpGelfClient : IGelfClient, IDisposable
     {
         private const int MaxChunks = 128;
-        private const int MaxMessageChunkSize = 8192;
+        private const int MaxChunkSize = 8192;
         private const int MessageHeaderSize = 12;
         private const int MessageIdSize = 8;
-        private const int MaxMessageBodySize = MaxMessageChunkSize - MessageHeaderSize;
+        private const int MaxMessageBodySize = MaxChunkSize - MessageHeaderSize;
 
         private readonly UdpClient _udpClient;
         private readonly GelfLoggerOptions _options;
@@ -30,31 +30,38 @@ namespace Gelf.Extensions.Logging
         public async Task SendMessageAsync(GelfMessage message)
         {
             var messageJson = JsonConvert.SerializeObject(message);
-            var messageBytes = await CompressMessageAsync(Encoding.UTF8.GetBytes(messageJson)).ConfigureAwait(false);
+            var messageBytes = Encoding.UTF8.GetBytes(messageJson);
+
+            if (_options.Compress && messageBytes.Length > _options.CompressionThreshold)
+            {
+                messageBytes = await CompressMessageAsync(messageBytes).ConfigureAwait(false);
+            }
 
             foreach (var messageChunk in ChunkMessage(messageBytes))
             {
-                await _udpClient.SendAsync(messageChunk, messageChunk.Length, _options.Hostname, _options.Port)
+                await _udpClient.SendAsync(messageChunk, messageChunk.Length, _options.GelfHost, _options.GelfPort)
                     .ConfigureAwait(false);
             }
         }
 
         private static async Task<byte[]> CompressMessageAsync(byte[] messageBytes)
         {
-            using (var inputStream = new MemoryStream(messageBytes))
             using (var outputStream = new MemoryStream())
-            using (var gzipStream = new GZipStream(outputStream, CompressionMode.Compress))
             {
-                await inputStream.CopyToAsync(gzipStream).ConfigureAwait(false);
+                using (var gzipStream = new GZipStream(outputStream, CompressionLevel.Optimal))
+                {
+                    await gzipStream.WriteAsync(messageBytes, 0, messageBytes.Length).ConfigureAwait(false);
+                }
                 return outputStream.ToArray();
             }
         }
 
         private static IEnumerable<byte[]> ChunkMessage(byte[] messageBytes)
         {
-            if (messageBytes.Length < MaxMessageChunkSize)
+            if (messageBytes.Length < MaxChunkSize)
             {
                 yield return messageBytes;
+                yield break;
             }
 
             var sequenceCount = (int) Math.Ceiling(messageBytes.Length / (double) MaxMessageBodySize);
@@ -64,28 +71,32 @@ namespace Gelf.Extensions.Logging
                 yield break;
             }
 
+            var messageId = GetMessageId();
             for (var sequenceNumber = 0; sequenceNumber < sequenceCount; sequenceNumber++)
             {
+                var messageHeader = GetMessageHeader(sequenceNumber, sequenceCount, messageId);
                 var chunkStartIndex = sequenceNumber * MaxMessageBodySize;
-                var chunkSize = Math.Min(messageBytes.Length - chunkStartIndex, MaxMessageBodySize);
+                var messageBodySize = Math.Min(messageBytes.Length - chunkStartIndex, MaxMessageBodySize);
+                var chunk = new byte[messageBodySize + MessageHeaderSize];
 
-                var messageHeader = GetMessageHeader(sequenceNumber, sequenceCount);
-                var chunk = new byte[chunkSize];
-
-                Array.Copy(messageHeader, chunk, messageHeader.Length);
-                Array.ConstrainedCopy(messageBytes, chunkStartIndex, chunk, MessageHeaderSize, chunkSize);
+                Array.Copy(messageHeader, chunk, MessageHeaderSize);
+                Array.ConstrainedCopy(messageBytes, chunkStartIndex, chunk, MessageHeaderSize, messageBodySize);
 
                 yield return chunk;
             }
         }
 
-        private static byte[] GetMessageHeader(int sequenceNumber, int sequenceCount)
+        private static byte[] GetMessageId()
+        {
+            return Guid.NewGuid().ToByteArray();   // TODO: Better message ID.
+        }
+
+        private static byte[] GetMessageHeader(int sequenceNumber, int sequenceCount, byte[] messageId)
         {
             var header = new byte[MessageHeaderSize];
             header[0] = 0x1e;
             header[1] = 0x0f;
 
-            var messageId = Guid.NewGuid().ToByteArray();   // TODO: Better message ID.
             Array.ConstrainedCopy(messageId, 0, header, 2, MessageIdSize);
 
             header[10] = Convert.ToByte(sequenceNumber);

@@ -14,6 +14,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A6D95AC6-FD7
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gelf.Extensions.Logging", "src\Gelf.Extensions.Logging\Gelf.Extensions.Logging.csproj", "{0480562A-97F5-423B-A11F-BD788D04E3AD}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{7999DEB6-1492-41CF-A94C-63606C616565}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gelf.Extensions.Logging.Tests", "test\Gelf.Extensions.Logging.Tests\Gelf.Extensions.Logging.Tests.csproj", "{4B299C4A-3A24-47B3-83D1-251D5FBDA174}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,11 +28,16 @@ Global
 		{0480562A-97F5-423B-A11F-BD788D04E3AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0480562A-97F5-423B-A11F-BD788D04E3AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0480562A-97F5-423B-A11F-BD788D04E3AD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4B299C4A-3A24-47B3-83D1-251D5FBDA174}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4B299C4A-3A24-47B3-83D1-251D5FBDA174}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4B299C4A-3A24-47B3-83D1-251D5FBDA174}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4B299C4A-3A24-47B3-83D1-251D5FBDA174}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{0480562A-97F5-423B-A11F-BD788D04E3AD} = {A6D95AC6-FD7C-459C-ADBE-5797A0EDF123}
+		{4B299C4A-3A24-47B3-83D1-251D5FBDA174} = {7999DEB6-1492-41CF-A94C-63606C616565}
 	EndGlobalSection
 EndGlobal
