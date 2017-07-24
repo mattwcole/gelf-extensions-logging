@@ -19,14 +19,14 @@ namespace Gelf.Extensions.Logging
             _messageProcessor.Start();
         }
 
-        public ILogger CreateLogger(string categoryName)
+        public ILogger CreateLogger(string name)
         {
-            return new GelfLogger(_messageProcessor, _options);
+            return new GelfLogger(name, _messageProcessor, _options);
         }
 
         public void Dispose()
         {
-            _messageProcessor.Dispose();
+            _messageProcessor.Stop();
             _gelfClient.Dispose();
         }
     }

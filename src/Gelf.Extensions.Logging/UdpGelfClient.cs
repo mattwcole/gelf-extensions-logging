@@ -20,11 +20,13 @@ namespace Gelf.Extensions.Logging
 
         private readonly UdpClient _udpClient;
         private readonly GelfLoggerOptions _options;
+        private readonly Random _random;
 
         public UdpGelfClient(GelfLoggerOptions options)
         {
             _options = options;
             _udpClient = new UdpClient();
+            _random = new Random();
         }
 
         public async Task SendMessageAsync(GelfMessage message)
@@ -39,7 +41,7 @@ namespace Gelf.Extensions.Logging
 
             foreach (var messageChunk in ChunkMessage(messageBytes))
             {
-                await _udpClient.SendAsync(messageChunk, messageChunk.Length, _options.GelfHost, _options.GelfPort)
+                await _udpClient.SendAsync(messageChunk, messageChunk.Length, _options.Host, _options.Port)
                     .ConfigureAwait(false);
             }
         }
@@ -48,7 +50,7 @@ namespace Gelf.Extensions.Logging
         {
             using (var outputStream = new MemoryStream())
             {
-                using (var gzipStream = new GZipStream(outputStream, CompressionLevel.Optimal))
+                using (var gzipStream = new GZipStream(outputStream, CompressionMode.Compress))
                 {
                     await gzipStream.WriteAsync(messageBytes, 0, messageBytes.Length).ConfigureAwait(false);
                 }
@@ -56,7 +58,7 @@ namespace Gelf.Extensions.Logging
             }
         }
 
-        private static IEnumerable<byte[]> ChunkMessage(byte[] messageBytes)
+        private IEnumerable<byte[]> ChunkMessage(byte[] messageBytes)
         {
             if (messageBytes.Length < MaxChunkSize)
             {
@@ -86,9 +88,11 @@ namespace Gelf.Extensions.Logging
             }
         }
 
-        private static byte[] GetMessageId()
+        private byte[] GetMessageId()
         {
-            return Guid.NewGuid().ToByteArray();   // TODO: Better message ID.
+            var messageId = new byte[8];
+            _random.NextBytes(messageId);
+            return messageId;
         }
 
         private static byte[] GetMessageHeader(int sequenceNumber, int sequenceCount, byte[] messageId)

@@ -7,12 +7,12 @@ namespace Gelf.Extensions.Logging
     {
         public static ILoggerFactory AddGelf(this ILoggerFactory loggerFactory, GelfLoggerOptions options)
         {
-            if (string.IsNullOrEmpty(options.GelfHost))
+            if (string.IsNullOrEmpty(options.Host))
             {
                 throw new ArgumentException("GELF host is required.", nameof(options));
             }
 
-            if (string.IsNullOrEmpty(options.AppHost))
+            if (string.IsNullOrEmpty(options.LogSource))
             {
                 throw new ArgumentException("Application host/source is required.", nameof(options));
             }

@@ -5,7 +5,7 @@ using System.Threading.Tasks.Dataflow;
 
 namespace Gelf.Extensions.Logging
 {
-    public class GelfMessageProcessor : IDisposable
+    public class GelfMessageProcessor
     {
         private readonly IGelfClient _gelfClient;
         private readonly BufferBlock<GelfMessage> _messageBuffer;
@@ -51,11 +51,6 @@ namespace Gelf.Extensions.Logging
             {
                 Debug.Fail("Failed to add GELF message to buffer.");
             }
-        }
-
-        public void Dispose()
-        {
-            Stop();
         }
     }
 }

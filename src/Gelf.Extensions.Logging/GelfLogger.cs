@@ -5,11 +5,13 @@ namespace Gelf.Extensions.Logging
 {
     public class GelfLogger : ILogger
     {
+        private readonly string _name;
         private readonly GelfMessageProcessor _messageProcessor;
         private readonly GelfLoggerOptions _options;
 
-        public GelfLogger(GelfMessageProcessor messageProcessor, GelfLoggerOptions options)
+        public GelfLogger(string name, GelfMessageProcessor messageProcessor, GelfLoggerOptions options)
         {
+            _name = name;
             _messageProcessor = messageProcessor;
             _options = options;
         }
@@ -17,10 +19,15 @@ namespace Gelf.Extensions.Logging
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state,
             Exception exception, Func<TState, Exception, string> formatter)
         {
+            if (logLevel == LogLevel.None || !IsEnabled(logLevel))
+            {
+                return;
+            }
+
             var message = new GelfMessage
             {
                 ShortMessage = formatter(state, exception),
-                Host = _options.AppHost,
+                Host = _options.LogSource,
                 Level = GetLevel(logLevel),
                 Timestamp = GetTimestamp()
             };
@@ -30,7 +37,7 @@ namespace Gelf.Extensions.Logging
 
         public bool IsEnabled(LogLevel logLevel)
         {
-            return true;    // TODO
+            return _options.Filter == null || _options.Filter(_name, logLevel);
         }
 
         public IDisposable BeginScope<TState>(TState state)
