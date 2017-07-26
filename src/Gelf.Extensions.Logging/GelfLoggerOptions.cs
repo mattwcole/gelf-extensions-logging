@@ -8,7 +8,7 @@ namespace Gelf.Extensions.Logging
     {
         public GelfLoggerOptions()
         {
-            Filter = (name, level) => level > LogLevel;
+            Filter = (name, level) => level >= LogLevel;
         }
 
         /// <summary>
