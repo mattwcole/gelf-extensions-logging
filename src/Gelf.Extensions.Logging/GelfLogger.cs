@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Extensions.Logging;
 
 namespace Gelf.Extensions.Logging
@@ -29,10 +31,25 @@ namespace Gelf.Extensions.Logging
                 ShortMessage = formatter(state, exception),
                 Host = _options.LogSource,
                 Level = GetLevel(logLevel),
-                Timestamp = GetTimestamp()
+                Timestamp = GetTimestamp(),
+                AdditionalFields = _options.AdditionalFields.Concat(GetScopeFields().ToArray())
             };
 
             _messageProcessor.SendMessage(message);
+        }
+
+        private static IEnumerable<KeyValuePair<string, string>> GetScopeFields()
+        {
+            var additionalFields = Enumerable.Empty<KeyValuePair<string, string>>();
+
+            var scope = GelfLogScope.Current;
+            while (scope != null)
+            {
+                additionalFields = additionalFields.Concat(scope.AdditionalFields);
+                scope = scope.Parent;
+            }
+
+            return additionalFields;
         }
 
         public bool IsEnabled(LogLevel logLevel)
@@ -42,7 +59,22 @@ namespace Gelf.Extensions.Logging
 
         public IDisposable BeginScope<TState>(TState state)
         {
-            return new NoopDisposable();    // TODO
+            var additionalField = state as ValueTuple<string, string>?;
+            if (additionalField.HasValue)
+            {
+                var field = additionalField.Value;
+                return GelfLogScope.Push(new[]
+                {
+                    new KeyValuePair<string, string>(field.Item1, field.Item2)
+                });
+            }
+
+            if (state is IEnumerable<KeyValuePair<string, string>> additionalFields)
+            {
+                return GelfLogScope.Push(additionalFields);
+            }
+
+            return new NoopDisposable();
         }
 
         private static SyslogSeverity GetLevel(LogLevel logLevel)

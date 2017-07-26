@@ -26,11 +26,14 @@ namespace Gelf.Extensions.Logging
         {
             while (!_messageBuffer.Completion.IsCompleted)
             {
-                var message = await _messageBuffer.ReceiveAsync().ConfigureAwait(false);
-
                 try
                 {
+                    var message = await _messageBuffer.ReceiveAsync().ConfigureAwait(false);
                     await _gelfClient.SendMessageAsync(message).ConfigureAwait(false);
+                }
+                catch (InvalidOperationException)
+                {
+                    // The source completed without providing data to receive.
                 }
                 catch (Exception ex)
                 {

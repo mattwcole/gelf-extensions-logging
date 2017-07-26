@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace Gelf.Extensions.Logging
 {
@@ -19,5 +20,8 @@ namespace Gelf.Extensions.Logging
 
         [JsonProperty("level")]
         public SyslogSeverity Level { get; set; }
+
+        [JsonIgnore]
+        public IEnumerable<KeyValuePair<string, string>> AdditionalFields { get; set; }
     }
 }

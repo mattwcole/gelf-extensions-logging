@@ -6,7 +6,7 @@ using System.IO.Compression;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Gelf.Extensions.Logging
 {
@@ -31,8 +31,7 @@ namespace Gelf.Extensions.Logging
 
         public async Task SendMessageAsync(GelfMessage message)
         {
-            var messageJson = JsonConvert.SerializeObject(message);
-            var messageBytes = Encoding.UTF8.GetBytes(messageJson);
+            var messageBytes = GetMessageBytes(message);
 
             if (_options.Compress && messageBytes.Length > _options.CompressionThreshold)
             {
@@ -44,6 +43,18 @@ namespace Gelf.Extensions.Logging
                 await _udpClient.SendAsync(messageChunk, messageChunk.Length, _options.Host, _options.Port)
                     .ConfigureAwait(false);
             }
+        }
+
+        private static byte[] GetMessageBytes(GelfMessage message)
+        {
+            var messageJson = JObject.FromObject(message);
+
+            foreach (var field in message.AdditionalFields)
+            {
+                messageJson[$"_{field.Key}"] = field.Value;
+            }
+
+            return Encoding.UTF8.GetBytes(messageJson.ToString());
         }
 
         private static async Task<byte[]> CompressMessageAsync(byte[] messageBytes)

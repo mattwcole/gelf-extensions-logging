@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 
 namespace Gelf.Extensions.Logging
@@ -36,7 +37,7 @@ namespace Gelf.Extensions.Logging
         public int CompressionThreshold { get; set; } = 512;
 
         /// <summary>
-        /// Function used to filter log events based on logger name and level. Overrides <see cref="LogLevel"/>.
+        /// Function used to filter log events based on logger name and level. Uses <see cref="LogLevel"/> by default.
         /// </summary>
         public Func<string, LogLevel, bool> Filter { get; set; }
 
@@ -44,5 +45,10 @@ namespace Gelf.Extensions.Logging
         /// The defualt log level.
         /// </summary>
         public LogLevel LogLevel { get; set; } = LogLevel.Information;
+
+        /// <summary>
+        /// Additional fields that will be attached to all log messages.
+        /// </summary>
+        public Dictionary<string, string> AdditionalFields { get; } = new Dictionary<string, string>();
     }
 }
