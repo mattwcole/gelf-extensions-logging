@@ -1,7 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard1.4</TargetFramework>
+    <VersionPrefix>0.1.0</VersionPrefix>
+    <TargetFramework>netstandard1.3</TargetFramework>
+    <PackageProjectUrl>https://github.com/mattwcole/gelf-extensions-logging</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/mattwcole/gelf-extensions-logging</RepositoryUrl>
+    <Copyright>2017 Matt Cole</Copyright>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/mattwcole/gelf-extensions-logging/master/LICENSE.md</PackageLicenseUrl>
+    <PackageTags>gelf graylog microsoft logging extensions</PackageTags>
+    <Description>GELF provider for Microsoft.Extensions.Logging.</Description>
+    <PackageIconUrl>https://raw.githubusercontent.com/mattwcole/gelf-extensions-logging/master/icon.png</PackageIconUrl>
+    <Authors>Matt Cole</Authors>
   </PropertyGroup>
 
   <ItemGroup>

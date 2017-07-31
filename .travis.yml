@@ -1,0 +1,14 @@
+language: generic
+sudo: required
+services:
+  - docker
+script:
+  - export VERSION="$TRAVIS_TAG"
+  - ./docker-compose.sh -f docker-compose.ci.build.yml up
+deploy:
+  on:
+    tags: true
+    all_branches: true
+  skip_cleanup: true
+  provider: script
+  script: ./docker-compose.sh -f docker-compose.ci.publish.yml up
