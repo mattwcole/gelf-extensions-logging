@@ -4,11 +4,11 @@ services:
   - docker
 script:
   - export VERSION="$TRAVIS_TAG"
-  - ./docker-compose.sh -f docker-compose.ci.build.yml up
+  - docker-compose -f docker-compose.ci.build.yml -f docker-compose.yml up --abort-on-container-exit
 deploy:
   on:
     tags: true
     all_branches: true
   skip_cleanup: true
   provider: script
-  script: ./docker-compose.sh -f docker-compose.ci.publish.yml up
+  script: docker-compose -f docker-compose.ci.publish.yml up --abort-on-container-exit

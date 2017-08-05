@@ -6,9 +6,11 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8D2DBBD0-2141-4B3D-BEA5-5FF4B15F0919}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		.travis.yml = .travis.yml
 		docker-compose.ci.build.yml = docker-compose.ci.build.yml
 		docker-compose.ci.publish.yml = docker-compose.ci.publish.yml
 		docker-compose.yml = docker-compose.yml
+		LICENSE.md = LICENSE.md
 		README.md = README.md
 	EndProjectSection
 EndProject
