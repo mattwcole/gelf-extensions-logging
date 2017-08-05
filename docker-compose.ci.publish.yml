@@ -10,5 +10,5 @@ services:
       /bin/bash -c '
         versionArg=$$([[ ! -z $VERSION ]] && echo "/p:PackageVersion=$VERSION" || echo "" fi)
         dotnet pack src/*/Gelf.Extensions.Logging.csproj -c Release --no-build $$versionArg
-        dotnet nuget push src/*/Gelf.Extensions.Logging.*.nupkg -s "$NUGET_SOURCE" -k "$NUGET_API_KEY"
+        dotnet nuget push src/**/Gelf.Extensions.Logging.*.nupkg -s "$NUGET_SOURCE" -k "$NUGET_API_KEY"
       '
