@@ -14,7 +14,10 @@ namespace Gelf.Extensions.Logging
         public GelfMessageProcessor(IGelfClient gelfClient)
         {
             _gelfClient = gelfClient;
-            _messageBuffer = new BufferBlock<GelfMessage>();
+            _messageBuffer = new BufferBlock<GelfMessage>(new DataflowBlockOptions
+            {
+                BoundedCapacity = 10000
+            });
         }
 
         public void Start()
@@ -45,7 +48,7 @@ namespace Gelf.Extensions.Logging
         public void Stop()
         {
             _messageBuffer.Complete();
-            Task.WaitAll(_messageBuffer.Completion, _processorTask);
+            _processorTask.Wait();
         }
 
         public void SendMessage(GelfMessage message)
