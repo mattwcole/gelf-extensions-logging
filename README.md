@@ -87,4 +87,4 @@ This repository contains a Docker Compose file that can be used for creating loc
 
 ## Contributing
 
-Pull requests welcome! The build is done in Docker, but this is not required for local development.
+Pull requests welcome! In order to run tests, first run `docker-compose up` to create the Graylog stack. Existing tests log messages and use the Graylog API to assert that they have been sent correctly.
