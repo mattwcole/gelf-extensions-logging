@@ -1,6 +1,6 @@
 # Gelf.Extensions.Logging [![travis](https://img.shields.io/travis/mattwcole/gelf-extensions-logging.svg?style=flat-square)](https://travis-ci.org/mattwcole/gelf-extensions-logging) [![nuget](https://img.shields.io/nuget/v/Gelf.Extensions.Logging.svg?style=flat-square)](https://www.nuget.org/packages/Gelf.Extensions.Logging) [![license](https://img.shields.io/github/license/mattwcole/gelf-extensions-logging.svg?style=flat-square)](https://github.com/mattwcole/gelf-extensions-logging/blob/master/LICENSE.md)
 
-GELF provider for [Microsoft.Extensions.Logging](https://github.com/aspnet/Logging).
+[GELF](http://docs.graylog.org/en/2.3/pages/gelf.html) provider for [Microsoft.Extensions.Logging](https://github.com/aspnet/Logging) for sending logs to [Graylog](https://www.graylog.org/).
 
 ## Usage
 
@@ -20,7 +20,7 @@ In addition to the above, there are a number of other settings on `GelfLoggerOpt
 
 ### Additional Fields
 
-Global fields that will be present on all messages can be added when configuring the logger.
+By default, `logger` and `exception` fields are included in all messages (the `exception` filed is only added when an exception is passed to the logger). Global fields that will be present on all messages can be added when configuring the logger.
 
 ```csharp
 var loggerFactory = new  LoggerFactory();
@@ -78,7 +78,7 @@ var gelfOptions = new GelfLoggerOptions
 
 ### Testing
 
-This repository contains a Docker Compose file that can be used for creating local a Graylog stack with a single command. This can be useful for testing application logs locally. Requires Docker and Docker Compose.
+This repository contains a Docker Compose file that can be used for creating local a Graylog stack with a single command using the [Graylog Docker image](https://hub.docker.com/r/graylog2/server/). This can be useful for testing application logs locally. Requires [Docker](https://www.docker.com/get-docker) and Docker Compose.
 
 - `docker-compose up`
 - Navigate to [http://localhost:9000](http://localhost:9000)
@@ -87,4 +87,4 @@ This repository contains a Docker Compose file that can be used for creating loc
 
 ## Contributing
 
-Pull requests welcome! In order to run tests, first run `docker-compose up` to create the Graylog stack. Existing tests log messages and use the Graylog API to assert that they have been sent correctly.
+Pull requests welcome! In order to run tests, first run `docker-compose up` to create the Graylog stack. Existing tests log messages and use the Graylog API to assert that they have been sent correctly. A UDP input will be created as part of the test setup (if not already present), so there is no need to create one manually. Build and tests are run on CI in Docker, meaning it is possible to run the build locally in identical conditions using `docker-compose -f docker-compose.ci.build.yml -f docker-compose.yml up`.

@@ -26,19 +26,29 @@ namespace Gelf.Extensions.Logging
                 return;
             }
 
+            var additionalFields = new Dictionary<string, string>(2)
+            {
+                ["logger"] = _name
+            };
+            if (exception != null)
+            {
+                additionalFields["exception"] = exception.ToString();
+            }
+
             var message = new GelfMessage
             {
                 ShortMessage = formatter(state, exception),
                 Host = _options.LogSource,
                 Level = GetLevel(logLevel),
                 Timestamp = GetTimestamp(),
-                AdditionalFields = _options.AdditionalFields.Concat(GetScopeFields().ToArray())
+                AdditionalFields = additionalFields.Concat(_options.AdditionalFields)
+                    .Concat(GetScopeAdditionalFields())
             };
 
             _messageProcessor.SendMessage(message);
         }
 
-        private static IEnumerable<KeyValuePair<string, string>> GetScopeFields()
+        private static ICollection<KeyValuePair<string, string>> GetScopeAdditionalFields()
         {
             var additionalFields = Enumerable.Empty<KeyValuePair<string, string>>();
 
@@ -49,7 +59,7 @@ namespace Gelf.Extensions.Logging
                 scope = scope.Parent;
             }
 
-            return additionalFields;
+            return additionalFields.ToArray();
         }
 
         public bool IsEnabled(LogLevel logLevel)

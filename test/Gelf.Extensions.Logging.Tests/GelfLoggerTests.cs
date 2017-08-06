@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Bogus;
+using Microsoft.CSharp.RuntimeBinder;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
@@ -42,6 +43,23 @@ namespace Gelf.Extensions.Logging.Tests
             Assert.Equal(_loggerFixture.LoggerOptions.LogSource, message.source);
             Assert.Equal(messageText, message.message);
             Assert.Equal(expectedLevel, message.level);
+            Assert.Equal(typeof(GelfLoggerTests).FullName, message.logger);
+            Assert.Throws<RuntimeBinderException>(() => message.exception);
+        }
+
+        [Fact]
+        public async Task Includes_exceptions_on_messages()
+        {
+            var exception = new Exception("Something went wrong!");
+            var sut = _loggerFixture.CreateLogger<GelfLoggerTests>();
+
+            sut.LogError(new EventId(), exception, _faker.Lorem.Sentence());
+
+            var messages = await _graylogFixture.WaitForMessagesAsync();
+            var message = Assert.Single(messages);
+
+            // ReSharper disable once PossibleNullReferenceException
+            Assert.Equal(exception.ToString(), message.exception);
         }
 
         [Theory]
