@@ -8,10 +8,10 @@ services:
     working_dir: /src
     environment:
       - GRAYLOG_HOST=graylog-server
-    command: |
+    command: >
       /bin/bash -c '
-        versionArg=$$([[ ! -z $VERSION ]] && echo "/p:PackageVersion=$VERSION" || echo "" fi)
-        dotnet restore
-        dotnet build -c Release $$versionArg
-        find test/*/*Tests.csproj | xargs dotnet test -c Release --no-build
+        versionArg=$$([[ ! -z "$VERSION" ]] && echo "/p:PackageVersion=$VERSION" || echo "") &&
+        dotnet restore &&
+        dotnet build -c Release $$versionArg &&
+        find test/*/*Tests.csproj | xargs -n 1 dotnet test -c Release --no-build
       '
