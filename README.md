@@ -4,10 +4,16 @@
 
 ## Usage
 
-Add the GELF logger using the `ILoggerFactory` extension method.
+In your Startup.cs add the import:
 
 ```csharp
-var loggerFactory = new  LoggerFactory();
+using Gelf.Extensions.Logging;
+```
+
+In the same file, add the GELF logger in the Configure method:
+
+```csharp
+var loggerFactory = new LoggerFactory();
 loggerFactory.AddGelf(new GelfLoggerOptions
 {
     Host = "graylog-hostname",
