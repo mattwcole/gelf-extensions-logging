@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.16
+VisualStudioVersion = 15.0.26730.15
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8D2DBBD0-2141-4B3D-BEA5-5FF4B15F0919}"
 	ProjectSection(SolutionItems) = preProject
@@ -22,6 +22,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{7999DEB6-1
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gelf.Extensions.Logging.Tests", "test\Gelf.Extensions.Logging.Tests\Gelf.Extensions.Logging.Tests.csproj", "{4B299C4A-3A24-47B3-83D1-251D5FBDA174}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{7D9416E1-13A5-4A86-A3F1-2289369D7193}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gelf.Extensions.Logging.Samples.NetCore2", "samples\Gelf.Extensions.Logging.Samples.NetCore2\Gelf.Extensions.Logging.Samples.NetCore2.csproj", "{0A2D1AF3-16F9-4081-A3BE-35331BEF58B5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gelf.Extensions.Logging.Samples.NetCore1", "samples\Gelf.Extensions.Logging.Samples.NetCore1\Gelf.Extensions.Logging.Samples.NetCore1.csproj", "{C55B368D-E4C1-42D0-97C2-4AD2F443743B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,6 +42,14 @@ Global
 		{4B299C4A-3A24-47B3-83D1-251D5FBDA174}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4B299C4A-3A24-47B3-83D1-251D5FBDA174}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4B299C4A-3A24-47B3-83D1-251D5FBDA174}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0A2D1AF3-16F9-4081-A3BE-35331BEF58B5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0A2D1AF3-16F9-4081-A3BE-35331BEF58B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0A2D1AF3-16F9-4081-A3BE-35331BEF58B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0A2D1AF3-16F9-4081-A3BE-35331BEF58B5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C55B368D-E4C1-42D0-97C2-4AD2F443743B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C55B368D-E4C1-42D0-97C2-4AD2F443743B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C55B368D-E4C1-42D0-97C2-4AD2F443743B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C55B368D-E4C1-42D0-97C2-4AD2F443743B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -43,5 +57,10 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{0480562A-97F5-423B-A11F-BD788D04E3AD} = {A6D95AC6-FD7C-459C-ADBE-5797A0EDF123}
 		{4B299C4A-3A24-47B3-83D1-251D5FBDA174} = {7999DEB6-1492-41CF-A94C-63606C616565}
+		{0A2D1AF3-16F9-4081-A3BE-35331BEF58B5} = {7D9416E1-13A5-4A86-A3F1-2289369D7193}
+		{C55B368D-E4C1-42D0-97C2-4AD2F443743B} = {7D9416E1-13A5-4A86-A3F1-2289369D7193}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C6D74A71-1746-4865-AAE2-77625B3E8935}
 	EndGlobalSection
 EndGlobal
