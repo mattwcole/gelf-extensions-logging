@@ -6,6 +6,7 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8D2DBBD0-2141-4B3D-BEA5-5FF4B15F0919}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		.gitignore = .gitignore
 		.travis.yml = .travis.yml
 		docker-compose.ci.build.yml = docker-compose.ci.build.yml
 		docker-compose.ci.publish.yml = docker-compose.ci.publish.yml
@@ -26,7 +27,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{7D94
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gelf.Extensions.Logging.Samples.NetCore2", "samples\Gelf.Extensions.Logging.Samples.NetCore2\Gelf.Extensions.Logging.Samples.NetCore2.csproj", "{0A2D1AF3-16F9-4081-A3BE-35331BEF58B5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gelf.Extensions.Logging.Samples.NetCore1", "samples\Gelf.Extensions.Logging.Samples.NetCore1\Gelf.Extensions.Logging.Samples.NetCore1.csproj", "{C55B368D-E4C1-42D0-97C2-4AD2F443743B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gelf.Extensions.Logging.Samples.NetCore1", "samples\Gelf.Extensions.Logging.Samples.NetCore1\Gelf.Extensions.Logging.Samples.NetCore1.csproj", "{C55B368D-E4C1-42D0-97C2-4AD2F443743B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

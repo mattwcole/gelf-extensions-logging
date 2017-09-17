@@ -260,5 +260,10 @@ paket-files/
 __pycache__/
 *.pyc
 
+## Project specific files and directories
+
 # Graylog
 graylog/data/
+
+# XML Documentation
+Gelf.Extensions.Logging.xml
