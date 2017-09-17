@@ -1,22 +1,18 @@
-﻿using System;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 
 namespace Gelf.Extensions.Logging
 {
     public static class LoggerFactoryExtensions
     {
+        /// <summary>
+        /// Adds a <see cref="GelfLoggerProvider"/> to the logger factory with the supplied
+        /// <see cref="GelfLoggerOptions"/>.
+        /// </summary>
+        /// <param name="loggerFactory"></param>
+        /// <param name="options"></param>
+        /// <returns></returns>
         public static ILoggerFactory AddGelf(this ILoggerFactory loggerFactory, GelfLoggerOptions options)
         {
-            if (string.IsNullOrEmpty(options.Host))
-            {
-                throw new ArgumentException("GELF host is required.", nameof(options));
-            }
-
-            if (string.IsNullOrEmpty(options.LogSource))
-            {
-                throw new ArgumentException("Application host/source is required.", nameof(options));
-            }
-
             loggerFactory.AddProvider(new GelfLoggerProvider(options));
             return loggerFactory;
         }

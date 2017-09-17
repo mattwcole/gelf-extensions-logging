@@ -8,7 +8,9 @@ namespace Gelf.Extensions.Logging
     {
         public GelfLoggerOptions()
         {
+#if !NETSTANDARD2_0
             Filter = (name, level) => level >= LogLevel;
+#endif
         }
 
         /// <summary>
@@ -39,11 +41,17 @@ namespace Gelf.Extensions.Logging
         /// <summary>
         /// Function used to filter log events based on logger name and level. Uses <see cref="LogLevel"/> by default.
         /// </summary>
+#if NETSTANDARD2_0
+        [Obsolete("Logs should be filtered using LoggerFactory.")]
+#endif
         public Func<string, LogLevel, bool> Filter { get; set; }
 
         /// <summary>
-        /// The defualt log level.
+        /// The log level used by the default filter. This is ignored if <see cref="Filter"/> is customised.
         /// </summary>
+#if NETSTANDARD2_0
+        [Obsolete("Logs should be filtered using LoggerFactory.")]
+#endif
         public LogLevel LogLevel { get; set; } = LogLevel.Information;
 
         /// <summary>

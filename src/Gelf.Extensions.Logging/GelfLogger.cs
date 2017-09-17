@@ -64,7 +64,9 @@ namespace Gelf.Extensions.Logging
 
         public bool IsEnabled(LogLevel logLevel)
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             return _options.Filter == null || _options.Filter(_name, logLevel);
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         public IDisposable BeginScope<TState>(TState state)
