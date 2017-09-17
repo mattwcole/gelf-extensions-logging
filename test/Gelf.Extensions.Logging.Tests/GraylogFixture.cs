@@ -86,15 +86,20 @@ namespace Gelf.Extensions.Logging.Tests
             var query = $"test_id:\"{TestContext.TestId}\"";
             var url = $"search/universal/relative?query={WebUtility.UrlEncode(query)}&range=60";
 
-            List<dynamic> messages = null;
+            var messages = new List<dynamic>();
 
             await RepeatUntilAsync(async cancellation =>
             {
-                messages = (await _httpClient.GetAsync(url, cancellation)).messages;
-                return messages?.Count == count;
+                messages.AddRange((await _httpClient.GetAsync(url, cancellation)).messages);
+                return messages.Count == count;
             });
 
             return messages.Select(m => m.message).ToList();
+        }
+
+        public async Task<dynamic> WaitForMessageAsync()
+        {
+            return (await WaitForMessagesAsync()).Single();
         }
 
         private static async Task RepeatUntilAsync(Func<CancellationToken, Task<bool>> predicate,

@@ -35,10 +35,8 @@ namespace Gelf.Extensions.Logging.Tests
 
             sut.Log(logLevel, new EventId(), (object) null, null, (s, e) => messageText);
 
-            var messages = await _graylogFixture.WaitForMessagesAsync();
-            var message = Assert.Single(messages);
+            var message = await _graylogFixture.WaitForMessageAsync();
 
-            // ReSharper disable once PossibleNullReferenceException
             Assert.NotEmpty(message._id);
             Assert.Equal(_loggerFixture.LoggerOptions.LogSource, message.source);
             Assert.Equal(messageText, message.message);
@@ -55,10 +53,8 @@ namespace Gelf.Extensions.Logging.Tests
 
             sut.LogError(new EventId(), exception, _faker.Lorem.Sentence());
 
-            var messages = await _graylogFixture.WaitForMessagesAsync();
-            var message = Assert.Single(messages);
-
-            // ReSharper disable once PossibleNullReferenceException
+            var message = await _graylogFixture.WaitForMessageAsync();
+            
             Assert.Equal(exception.ToString(), message.exception);
         }
 
@@ -79,10 +75,8 @@ namespace Gelf.Extensions.Logging.Tests
                 var sut = loggerFactory.CreateLogger(nameof(GelfLoggerTests));
                 sut.LogInformation(messageText);
 
-                var messages = await _graylogFixture.WaitForMessagesAsync();
-                var message = Assert.Single(messages);
+                var message = await _graylogFixture.WaitForMessageAsync();
 
-                // ReSharper disable once PossibleNullReferenceException
                 Assert.NotEmpty(message._id);
                 Assert.Equal(options.LogSource, message.source);
                 Assert.Equal(messageText, message.message);
@@ -103,10 +97,8 @@ namespace Gelf.Extensions.Logging.Tests
                 var sut = loggerFactory.CreateLogger(nameof(GelfLoggerTests));
                 sut.LogInformation(messageText);
 
-                var messages = await _graylogFixture.WaitForMessagesAsync();
-                var message = Assert.Single(messages);
+                var message = await _graylogFixture.WaitForMessageAsync();
 
-                // ReSharper disable once PossibleNullReferenceException
                 Assert.Equal("foo", message.foo);
                 Assert.Equal("bar", message.bar);
             }
@@ -127,10 +119,8 @@ namespace Gelf.Extensions.Logging.Tests
                 sut.LogCritical(messageText);
             }
 
-            var messages = await _graylogFixture.WaitForMessagesAsync();
-            var message = Assert.Single(messages);
+            var message = await _graylogFixture.WaitForMessageAsync();
 
-            // ReSharper disable once PossibleNullReferenceException
             Assert.Equal("baz", message.baz);
             Assert.Equal("qux", message.qux);
         }

@@ -10,6 +10,7 @@ namespace Gelf.Extensions.Logging.Tests
         public LoggerFixture()
         {
             TestContext.TestId = Guid.NewGuid().ToString();
+            
             _loggerFactory = new LoggerFactory();
             _loggerFactory.AddGelf(LoggerOptions);
         }
@@ -18,8 +19,7 @@ namespace Gelf.Extensions.Logging.Tests
         {
             Host = GraylogFixture.GraylogHost,
             Port = GraylogFixture.GraylogLogPort,
-            LogSource = "Gelf.Extensions.Logging.Tests",
-            LogLevel = LogLevel.Trace
+            LogSource = "Gelf.Extensions.Logging.Tests"
         };
 
         public ILoggerFactory CreateLoggerFactory(GelfLoggerOptions options)
