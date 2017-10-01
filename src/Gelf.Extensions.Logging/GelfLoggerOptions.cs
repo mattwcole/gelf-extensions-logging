@@ -57,6 +57,6 @@ namespace Gelf.Extensions.Logging
         /// <summary>
         /// Additional fields that will be attached to all log messages.
         /// </summary>
-        public Dictionary<string, string> AdditionalFields { get; } = new Dictionary<string, string>();
+        public Dictionary<string, object> AdditionalFields { get; } = new Dictionary<string, object>();
     }
 }

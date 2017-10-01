@@ -22,6 +22,6 @@ namespace Gelf.Extensions.Logging
         public SyslogSeverity Level { get; set; }
 
         [JsonIgnore]
-        public IEnumerable<KeyValuePair<string, string>> AdditionalFields { get; set; }
+        public IEnumerable<KeyValuePair<string, object>> AdditionalFields { get; set; }
     }
 }

@@ -11,8 +11,10 @@ namespace Gelf.Extensions.Logging.Tests
 {
     public class GraylogFixture : IAsyncLifetime
     {
-        public static readonly string GraylogHost = Environment.GetEnvironmentVariable("GRAYLOG_HOST") ?? "localhost";
+        public const string GraylogHost = "localhost";
         public const int GraylogLogPort = 12201;
+        private const string GraylogUsername = "admin";
+        private const string GraylogPassword = "admin";
         private const int GraylogApiPort = 9000;
         private const int ApiPollInterval = 200;
         private const int ApiPollTimeout = 10000;
@@ -21,7 +23,8 @@ namespace Gelf.Extensions.Logging.Tests
 
         public GraylogFixture()
         {
-            _httpClient = new HttpClientWrapper($"http://{GraylogHost}:{GraylogApiPort}/api/", "admin", "admin");
+            _httpClient = new HttpClientWrapper(
+                $"http://{GraylogHost}:{GraylogApiPort}/api/", GraylogUsername, GraylogPassword);
         }
 
         public async Task InitializeAsync()

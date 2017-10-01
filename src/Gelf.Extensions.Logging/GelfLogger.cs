@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Internal;
 
 namespace Gelf.Extensions.Logging
 {
@@ -26,31 +27,41 @@ namespace Gelf.Extensions.Logging
                 return;
             }
 
-            var additionalFields = new Dictionary<string, string>(2)
-            {
-                ["logger"] = _name
-            };
-            if (exception != null)
-            {
-                additionalFields["exception"] = exception.ToString();
-            }
-
             var message = new GelfMessage
             {
                 ShortMessage = formatter(state, exception),
                 Host = _options.LogSource,
                 Level = GetLevel(logLevel),
                 Timestamp = GetTimestamp(),
-                AdditionalFields = additionalFields.Concat(_options.AdditionalFields)
+                AdditionalFields = _options.AdditionalFields
+                    .Concat(GetStateAdditionalFields(state, exception))
                     .Concat(GetScopeAdditionalFields())
             };
 
             _messageProcessor.SendMessage(message);
         }
 
-        private static ICollection<KeyValuePair<string, string>> GetScopeAdditionalFields()
+        private IEnumerable<KeyValuePair<string, object>> GetStateAdditionalFields<TState>(
+            TState state, Exception exception)
         {
-            var additionalFields = Enumerable.Empty<KeyValuePair<string, string>>();
+            var defaultAdditionalFields = new Dictionary<string, object>(2)
+            {
+                ["logger"] = _name
+            };
+
+            if (exception != null)
+            {
+                defaultAdditionalFields["exception"] = exception;
+            }
+
+            return state is FormattedLogValues stateAdditionalFields
+                ? defaultAdditionalFields.Concat(stateAdditionalFields.Take(stateAdditionalFields.Count - 1))
+                : defaultAdditionalFields;
+        }
+
+        private static IEnumerable<KeyValuePair<string, object>> GetScopeAdditionalFields()
+        {
+            var additionalFields = Enumerable.Empty<KeyValuePair<string, object>>();
 
             var scope = GelfLogScope.Current;
             while (scope != null)
@@ -76,9 +87,9 @@ namespace Gelf.Extensions.Logging
                 case ValueTuple<string, string> additionalField:
                     return GelfLogScope.Push(new[]
                     {
-                        new KeyValuePair<string, string>(additionalField.Item1, additionalField.Item2)
+                        new KeyValuePair<string, object>(additionalField.Item1, additionalField.Item2)
                     });
-                case IEnumerable<KeyValuePair<string, string>> additionalFields:
+                case IEnumerable<KeyValuePair<string, object>> additionalFields:
                     return GelfLogScope.Push(additionalFields);
                 default:
                     return new NoopDisposable();

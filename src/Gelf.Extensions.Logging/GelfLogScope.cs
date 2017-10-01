@@ -6,14 +6,14 @@ namespace Gelf.Extensions.Logging
 {
     public class GelfLogScope
     {
-        internal GelfLogScope(IEnumerable<KeyValuePair<string,string>> additionalFields)
+        internal GelfLogScope(IEnumerable<KeyValuePair<string, object>> additionalFields)
         {
             AdditionalFields = additionalFields;
         }
 
         public GelfLogScope Parent { get; private set; }
 
-        public IEnumerable<KeyValuePair<string,string>> AdditionalFields { get; }
+        public IEnumerable<KeyValuePair<string, object>> AdditionalFields { get; }
 
         private static readonly AsyncLocal<GelfLogScope> Value = new AsyncLocal<GelfLogScope>();
 
@@ -23,7 +23,7 @@ namespace Gelf.Extensions.Logging
             set => Value.Value = value;
         }
 
-        public static IDisposable Push(IEnumerable<KeyValuePair<string,string>> additionalFields)
+        public static IDisposable Push(IEnumerable<KeyValuePair<string, object>> additionalFields)
         {
             var parent = Current;
             Current = new GelfLogScope(additionalFields) {Parent = parent};

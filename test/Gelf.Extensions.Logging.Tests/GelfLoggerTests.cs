@@ -110,7 +110,7 @@ namespace Gelf.Extensions.Logging.Tests
             var messageText = _faker.Lorem.Sentence();
 
             var sut = _loggerFixture.CreateLogger<GelfLoggerTests>();
-            using (sut.BeginScope(new Dictionary<string, string>
+            using (sut.BeginScope(new Dictionary<string, object>
             {
                 ["baz"] = "baz",
                 ["qux"] = "qux"
@@ -123,6 +123,19 @@ namespace Gelf.Extensions.Logging.Tests
 
             Assert.Equal("baz", message.baz);
             Assert.Equal("qux", message.qux);
+        }
+
+        [Fact]
+        public async Task Sends_message_with_additional_fields_from_structured_log()
+        {
+            var sut = _loggerFixture.CreateLogger<GelfLoggerTests>();
+            sut.LogDebug("Structured log line with {first_value} and {second_value}", "foo", "bar");
+
+            var message = await _graylogFixture.WaitForMessageAsync();
+
+            Assert.Equal("Structured log line with foo and bar", message.message);
+            Assert.Equal("foo", message.first_value);
+            Assert.Equal("bar", message.second_value);
         }
 
         public void Dispose()
