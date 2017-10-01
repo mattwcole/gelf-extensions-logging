@@ -71,22 +71,18 @@ namespace Gelf.Extensions.Logging
 
         public IDisposable BeginScope<TState>(TState state)
         {
-            var additionalField = state as ValueTuple<string, string>?;
-            if (additionalField.HasValue)
+            switch (state)
             {
-                var field = additionalField.Value;
-                return GelfLogScope.Push(new[]
-                {
-                    new KeyValuePair<string, string>(field.Item1, field.Item2)
-                });
+                case ValueTuple<string, string> additionalField:
+                    return GelfLogScope.Push(new[]
+                    {
+                        new KeyValuePair<string, string>(additionalField.Item1, additionalField.Item2)
+                    });
+                case IEnumerable<KeyValuePair<string, string>> additionalFields:
+                    return GelfLogScope.Push(additionalFields);
+                default:
+                    return new NoopDisposable();
             }
-
-            if (state is IEnumerable<KeyValuePair<string, string>> additionalFields)
-            {
-                return GelfLogScope.Push(additionalFields);
-            }
-
-            return new NoopDisposable();
         }
 
         private static SyslogSeverity GetLevel(LogLevel logLevel)

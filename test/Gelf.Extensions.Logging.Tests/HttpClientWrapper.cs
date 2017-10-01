@@ -28,7 +28,7 @@ namespace Gelf.Extensions.Logging.Tests
             };
         }
 
-        public async Task<dynamic> GetAsync(string url, CancellationToken cancellation = default(CancellationToken))
+        public async Task<dynamic> GetAsync(string url, CancellationToken cancellation = default)
         {
             using (var response = await _httpClient.GetAsync(url, cancellation))
             {
@@ -37,7 +37,7 @@ namespace Gelf.Extensions.Logging.Tests
         }
 
         public async Task<dynamic> PostAsync(object value, string url,
-            CancellationToken cancellation = default(CancellationToken))
+            CancellationToken cancellation = default)
         {
             var requestJson = JsonConvert.SerializeObject(value);
             var requestContent = new StringContent(requestJson, Encoding.UTF8, "application/json");
