@@ -4,7 +4,7 @@
 
 ## Usage
 
-The following examples are for ASP.NET Core. The [samples](/samples) directory contains example console apps. For more information on providers, and logging in general, see the aspnetcore [logging documentation](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/logging?tabs=aspnetcore2x#how-to-add-providers).
+The following examples are for ASP.NET Core. The [samples](/samples) directory contains example console apps. For more information on providers and logging in general, see the aspnetcore [logging documentation](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/logging?tabs=aspnetcore2x#how-to-add-providers).
 
 ### ASP.NET Core 2.x
 
@@ -76,7 +76,7 @@ public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
 
 ### Additional Fields
 
-By default, `logger` and `exception` fields are included in all messages (the `exception` filed is only added when an exception is passed to the logger). There are a number of other ways to attach data to logs.
+By default, `logger` and `exception` fields are included on all messages (the `exception` field is only added when an exception is passed to the logger). There are a number of other ways to attach data to logs.
 
 #### Global Fields
 
@@ -97,7 +97,7 @@ var options = new GelfLoggerOptions
 
 #### Scoped Fields
 
-Log scopes can also be used to attach fields to a group of related logs. Create a log scope with a [`ValueTuple<string, string>`](https://blogs.msdn.microsoft.com/dotnet/2017/03/09/new-features-in-c-7-0/) or `Dictionary<string, object>`. _Note that any other types passed to `BeginScope()` will be ignored, including `Dictionary<string, string>` and `ValueTuple<string, object>`._
+Log scopes can also be used to attach fields to a group of related logs. Create a log scope with a [`ValueTuple<string, string>`](https://blogs.msdn.microsoft.com/dotnet/2017/03/09/new-features-in-c-7-0/) or `Dictionary<string, object>` to do so. _Note that any other types passed to `BeginScope()` will be ignored, including `Dictionary<string, string>` and `ValueTuple<string, object>`._
 
 ```csharp
 using (_logger.BeginScope(("correlation_id", correlationId)))
@@ -123,9 +123,11 @@ using (_logger.BeginScope(new Dictionary<string, object>
 _logger.LogInformation("Order {order_id} took {order_time} seconds to process", orderId, orderTime);
 ```
 
+In the example above, the message will contains an `order_id` and `order_time`.
+
 ### Log Filtering
 
-When using .NET Core 1.x, log filtering can be overridden by setting a custom filter in `GelfLoggerOptions.Filter`, overriding the default filter that uses `GelfLoggerOptions.LogLevel`. In .NET Core 2.x, the log filtering API should be used to filter the "GELF" provider (details [here](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/logging?tabs=aspnetcore2x#log-filtering)).
+When using .NET Core 1.x, log filtering can be overridden by setting a custom filter with `GelfLoggerOptions.Filter`, overriding the default filter that uses `GelfLoggerOptions.LogLevel`. In .NET Core 2.x, the log filtering API should be used to filter the "GELF" provider (details [here](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/logging?tabs=aspnetcore2x#log-filtering)).
 
 ### Testing
 

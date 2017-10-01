@@ -11,7 +11,7 @@ namespace Gelf.Extensions.Logging.Tests
 {
     public class GraylogFixture : IAsyncLifetime
     {
-        public const string GraylogHost = "localhost";
+        public static readonly string GraylogHost = Environment.GetEnvironmentVariable("GRAYLOG_HOST") ?? "localhost";
         public const int GraylogLogPort = 12201;
         private const string GraylogUsername = "admin";
         private const string GraylogPassword = "admin";
