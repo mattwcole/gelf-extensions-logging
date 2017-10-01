@@ -1,40 +1,92 @@
 # Gelf.Extensions.Logging [![travis](https://img.shields.io/travis/mattwcole/gelf-extensions-logging.svg?style=flat-square)](https://travis-ci.org/mattwcole/gelf-extensions-logging) [![nuget](https://img.shields.io/nuget/v/Gelf.Extensions.Logging.svg?style=flat-square)](https://www.nuget.org/packages/Gelf.Extensions.Logging) [![license](https://img.shields.io/github/license/mattwcole/gelf-extensions-logging.svg?style=flat-square)](https://github.com/mattwcole/gelf-extensions-logging/blob/master/LICENSE.md)
 
-[GELF](http://docs.graylog.org/en/2.3/pages/gelf.html) provider for [Microsoft.Extensions.Logging](https://github.com/aspnet/Logging) for sending logs to [Graylog](https://www.graylog.org/).
+[GELF](http://docs.graylog.org/en/2.3/pages/gelf.html) provider for [Microsoft.Extensions.Logging](https://github.com/aspnet/Logging) for sending logs to [Graylog](https://www.graylog.org/), [Logstash](https://www.elastic.co/products/logstash) and others from .NET Standard 1.3+ components.
 
 ## Usage
 
-In your Startup.cs add the import:
+The following examples are for ASP.NET Core. The [samples](/samples) directory contains example console apps. For more information on providers, and logging in general, see the aspnetcore [logging documentation](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/logging?tabs=aspnetcore2x#how-to-add-providers).
+
+### ASP.NET Core 2.x
+
+In `Progarm.cs`, import the `LoggingBuilder.AddGelf()` extension method from `Gelf.Extensions.Logging` and add the following to your `WebHost` configuration.
 
 ```csharp
-using Gelf.Extensions.Logging;
-```
-
-In the same file, add the GELF logger in the Configure method:
-
-```csharp
-var loggerFactory = new LoggerFactory();
-loggerFactory.AddGelf(new GelfLoggerOptions
+public static void Main(string[] args)
 {
-    Host = "graylog-hostname",
-    LogSource = "my-application",
-    LogLevel = LogLevel.Information
-});
+    var webHost = new WebHostBuilder()
+        ...
+        .ConfigureLogging((context, builder) =>
+        {
+            builder.AddConfiguration(context.Configuration.GetSection("Logging"))
+                .AddConsole()
+                .AddDebug()
+                .AddGelf(options =>
+                {
+                    options.Host = "graylog-hostname";
+                    options.LogSource = "application-name";
+                }));
+        })
+        .Build();
+
+    ...
+}
 ```
 
-In addition to the above, there are a number of other settings on `GelfLoggerOptions` including port, additional fields and log filter.
+You can then configure the "GELF" logger in `appsettings.json` in the same way as other providers. If you would prefer to read the `GelfLoggerOptions` from `appsettings.json` as well you can do so using the parameterless overload of `AddGelf()`, configuring `GelfLoggerOptions` with `IServiceProvider.Configure<GelfLoggerOptions>()`.
+
+```csharp
+public static void Main(string[] args)
+{
+    var webHost = new WebHostBuilder()
+        ...
+        .ConfigureLogging((context, builder) =>
+        {
+            builder.Services.Configure<GelfLoggerOptions>(context.Configuration.GetSection("Graylog"));
+            builder.AddConfiguration(context.Configuration.GetSection("Logging"))
+                .AddConsole()
+                .AddDebug()
+                .AddGelf());
+        })
+        .Build();
+
+    ...
+}
+```
+
+### ASP.NET Core 1.x
+
+In `Startup.cs`, import the `LoggerFactory.AddGelf()` extension method from `Gelf.Extensions.Logging` and add the following to your `Configure()` method.
+
+```csharp
+public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
+{
+    loggerFactory
+        .AddConsole()
+        .AddDebug()
+        .AddGelf(new GelfLoggerOptions
+        {
+            Host = "graylog-hostname",
+            LogSource = "application-name",
+            LogLevel = LogLevel.Information
+        });
+
+    ...
+}
+```
 
 ### Additional Fields
 
-By default, `logger` and `exception` fields are included in all messages (the `exception` filed is only added when an exception is passed to the logger). Global fields that will be present on all messages can be added when configuring the logger.
+By default, `logger` and `exception` fields are included in all messages (the `exception` filed is only added when an exception is passed to the logger). There are a number of other ways to attach data to logs.
+
+#### Global Fields
+
+Global fields can be added to all logs by setting them in `GelfLoggerOptions.AdditionalFields`.
 
 ```csharp
-var loggerFactory = new  LoggerFactory();
-loggerFactory.AddGelf(new GelfLoggerOptions
+var options = new GelfLoggerOptions
 {
     Host = "graylog-host",
     LogSource = "my-application",
-    LogLevel = LogLevel.Information,
     AdditionalFields =
     {
         ["machine_name"] = Environment.MachineName,
@@ -43,19 +95,17 @@ loggerFactory.AddGelf(new GelfLoggerOptions
 });
 ```
 
-To add a context specific field, create a log scope with a [`ValueTuple<string, string>`](https://blogs.msdn.microsoft.com/dotnet/2017/03/09/new-features-in-c-7-0/).
+#### Scoped Fields
+
+Log scopes can also be used to attach fields to a group of related logs. Create a log scope with a [`ValueTuple<string, string>`](https://blogs.msdn.microsoft.com/dotnet/2017/03/09/new-features-in-c-7-0/) or `Dictionary<string, object>`. _Note that any other types passed to `BeginScope()` will be ignored, including `Dictionary<string, string>` and `ValueTuple<string, object>`._
 
 ```csharp
 using (_logger.BeginScope(("correlation_id", correlationId)))
 {
     // Field will be added to all logs within this scope (using any ILogger<T> instance).
 }
-```
 
-To add multiple fields at once, use a `Dictionary<string, string>`.
-
-```csharp
-using (_logger.BeginScope(new Dictionary<string, string>
+using (_logger.BeginScope(new Dictionary<string, object>
 {
     ["order_id"] = orderId,
     ["customer_id"] = customerId
@@ -65,22 +115,17 @@ using (_logger.BeginScope(new Dictionary<string, string>
 }
 ```
 
-### Log Filtering
+#### Structured/Semantic Logging
 
-By default, all logs greater or equal in level to `GelfLoggerOptions.LogLevel` will be sent. This behavior can be overridden by setting a custom filter. The example below is from an ASP.NET Core application that ignores logging on requests to the `/healthcheck` endpoint.
+[Semantic logging](https://softwareengineering.stackexchange.com/questions/312197/benefits-of-structured-logging-vs-basic-logging) is also supported meaning fields can be extracted from individual log lines.
 
 ```csharp
-var httpContextAccessor = app.ApplicationServices.GetRequiredService<IHttpContextAccessor>();
-var gelfOptions = new GelfLoggerOptions
-{
-    Host = logSettings.Host,
-    Port = logSettings.Port,
-    LogSource = Environment.MachineName,
-    AdditionalFields = {{"facility", logSettings.Facility}},
-    Filter = (name, logLevel) => logLevel >= logSettings.LogLevel &&
-        httpContextAccessor.HttpContext?.Request.Path.Equals("/healthcheck") != true
-};
+_logger.LogInformation("Order {order_id} took {order_time} seconds to process", orderId, orderTime);
 ```
+
+### Log Filtering
+
+When using .NET Core 1.x, log filtering can be overridden by setting a custom filter in `GelfLoggerOptions.Filter`, overriding the default filter that uses `GelfLoggerOptions.LogLevel`. In .NET Core 2.x, the log filtering API should be used to filter the "GELF" provider (details [here](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/logging?tabs=aspnetcore2x#log-filtering)).
 
 ### Testing
 

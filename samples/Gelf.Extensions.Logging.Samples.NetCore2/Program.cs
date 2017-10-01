@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -15,7 +17,7 @@ namespace Gelf.Extensions.Logging.Samples.NetCore2
                 .Build();
 
             var serviceCollection = new ServiceCollection()
-                .Configure<GelfLoggerOptions>(configuration.GetSection("Logging:GELF"))
+                .Configure<GelfLoggerOptions>(configuration.GetSection("Graylog"))
                 .AddLogging(loggingBuilder => loggingBuilder
                     .AddConfiguration(configuration.GetSection("Logging"))
                     .AddConsole()
@@ -24,16 +26,31 @@ namespace Gelf.Extensions.Logging.Samples.NetCore2
             // The LoggerFactory must be disposed before the program exits to ensure all queued messages are sent.
             using (var serviceProvider = serviceCollection.BuildServiceProvider())
             {
-                var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
+                UseLogger(serviceProvider.GetRequiredService<ILogger<Program>>());
+            }
+        }
 
-                logger.LogInformation("Information level log from netcoreapp2.0");
-                logger.LogDebug("Debug level log from netcoreapp2.0");
-                logger.LogTrace("Trace level log from netcoreapp2.0");
+        private static void UseLogger(ILogger<Program> logger)
+        {
+            const string framework = "netcoreapp2.0";
 
-                using (logger.BeginScope(("custom_attribute", "12345")))
+            logger.LogInformation("Information log from {framework}", framework);
+
+            using (logger.BeginScope(("scope_field1", "foo")))
+            {
+                logger.LogDebug("Debug log from {framework}", framework);
+
+                using (logger.BeginScope(new Dictionary<string, object>
                 {
-                    logger.LogInformation("Log with custom attribute from netcoreapp2.0");
+                    ["scope_field2"] = "bar",
+                    ["scope_field3"] = "baz"
+                }))
+                {
+                    logger.LogTrace("Debug log from {framework}", framework);
                 }
+
+                logger.LogError(new EventId(), new Exception("Example exception!"),
+                    "Error log from {framework}", framework);
             }
         }
     }

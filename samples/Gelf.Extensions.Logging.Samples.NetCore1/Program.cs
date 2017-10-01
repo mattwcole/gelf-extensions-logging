@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,23 +25,38 @@ namespace Gelf.Extensions.Logging.Samples.NetCore1
                 var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
                 loggerFactory
                     .AddConsole(configuration.GetSection("Logging:Console"))
-                    .AddGelf(configuration.GetSection("Logging:GELF").Get<GelfLoggerOptions>());
+                    .AddGelf(configuration.GetSection("Logging:Graylog").Get<GelfLoggerOptions>());
 
-                var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
-
-                logger.LogInformation("Information level log from netcoreapp1.1");
-                logger.LogDebug("Debug level log from netcoreapp1.1");
-                logger.LogTrace("Trace level log from netcoreapp1.1");
-
-                using (logger.BeginScope(("custom_attribute", "12345")))
-                {
-                    logger.LogInformation("Log with custom attribute from netcoreapp1.1");
-                }
+                UseLogger(serviceProvider.GetRequiredService<ILogger<Program>>());
             }
             finally
             {
                 // The LoggerFactory must be disposed before the program exits to ensure all queued messages are sent.
                 (serviceProvider as IDisposable)?.Dispose();
+            }
+        }
+
+        private static void UseLogger(ILogger<Program> logger)
+        {
+            const string framework = "netcoreapp1.1";
+
+            logger.LogInformation("Information log from {framework}", framework);
+
+            using (logger.BeginScope(("scope_field1", "foo")))
+            {
+                logger.LogDebug("Debug log from {framework}", framework);
+
+                using (logger.BeginScope(new Dictionary<string, object>
+                {
+                    ["scope_field2"] = "bar",
+                    ["scope_field3"] = "baz"
+                }))
+                {
+                    logger.LogTrace("Debug log from {framework}", framework);
+                }
+
+                logger.LogError(new EventId(), new Exception("Example exception!"),
+                    "Error log from {framework}", framework);
             }
         }
     }
