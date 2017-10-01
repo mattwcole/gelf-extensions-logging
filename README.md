@@ -24,7 +24,7 @@ public static void Main(string[] args)
                 {
                     options.Host = "graylog-hostname";
                     options.LogSource = "application-name";
-                }));
+                });
         })
         .Build();
 
@@ -45,7 +45,7 @@ public static void Main(string[] args)
             builder.AddConfiguration(context.Configuration.GetSection("Logging"))
                 .AddConsole()
                 .AddDebug()
-                .AddGelf());
+                .AddGelf();
         })
         .Build();
 
@@ -123,7 +123,7 @@ using (_logger.BeginScope(new Dictionary<string, object>
 _logger.LogInformation("Order {order_id} took {order_time} seconds to process", orderId, orderTime);
 ```
 
-In the example above, the message will contains an `order_id` and `order_time`.
+In the example above, the message will contain an `order_id` and `order_time`.
 
 ### Log Filtering
 
