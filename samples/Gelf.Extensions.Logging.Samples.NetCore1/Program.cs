@@ -42,17 +42,17 @@ namespace Gelf.Extensions.Logging.Samples.NetCore1
 
             logger.LogInformation("Information log from {framework}", framework);
 
-            using (logger.BeginScope(("scope_field1", "foo")))
+            using (logger.BeginScope(("scope_field_1", "foo")))
             {
                 logger.LogDebug("Debug log from {framework}", framework);
 
                 using (logger.BeginScope(new Dictionary<string, object>
                 {
-                    ["scope_field2"] = "bar",
-                    ["scope_field3"] = "baz"
+                    ["scope_field_2"] = "bar",
+                    ["scope_field_3"] = "baz"
                 }))
                 {
-                    logger.LogTrace("Debug log from {framework}", framework);
+                    logger.LogTrace("Trace log from {framework}", framework);
                 }
 
                 logger.LogError(new EventId(), new Exception("Example exception!"),
