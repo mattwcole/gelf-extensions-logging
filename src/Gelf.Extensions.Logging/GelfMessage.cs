@@ -16,7 +16,7 @@ namespace Gelf.Extensions.Logging
         public string ShortMessage { get; set; }
 
         [JsonProperty("timestamp")]
-        public string Timestamp { get; set; }
+        public double Timestamp { get; set; }
 
         [JsonProperty("level")]
         public SyslogSeverity Level { get; set; }
