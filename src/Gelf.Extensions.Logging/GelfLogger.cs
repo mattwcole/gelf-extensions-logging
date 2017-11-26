@@ -116,13 +116,11 @@ namespace Gelf.Extensions.Logging
             }
         }
 
-        private static string GetTimestamp()
+        private static double GetTimestamp()
         {
-            var utcNow = DateTimeOffset.UtcNow;
-            var totalSeconds = utcNow.ToUnixTimeSeconds();
-            var totalMiliseconds = utcNow.ToUnixTimeMilliseconds();
-
-            return $"{totalSeconds}.{totalMiliseconds % 1000}";
+            var totalMiliseconds = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            var totalSeconds = totalMiliseconds / 1000d;
+            return Math.Round(totalSeconds, 2);
         }
 
         private class NoopDisposable : IDisposable
