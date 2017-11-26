@@ -64,7 +64,7 @@ namespace Gelf.Extensions.Logging.Tests
         [InlineData(300, 300)]
         [InlineData(23000, 25000)]
         [InlineData(12000, 10000)]
-        public async Task Sends_messages_with_and_without_compression(int compressionThreshold, int messageSize)
+        public async Task Sends_message_with_and_without_compression(int compressionThreshold, int messageSize)
         {
             var options = _loggerFixture.LoggerOptions;
             options.CompressionThreshold = compressionThreshold;

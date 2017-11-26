@@ -7,7 +7,7 @@ services:
       - .:/src
     working_dir: /src
     environment:
-      - GRAYLOG_HOST=graylog-server
+      - GRAYLOG_HOST=graylog
     command: >
       /bin/bash -c '
         versionArg=$$([[ ! -z "$VERSION" ]] && echo "/p:Version=$VERSION" || echo "") &&

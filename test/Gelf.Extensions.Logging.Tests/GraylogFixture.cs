@@ -70,7 +70,7 @@ namespace Gelf.Extensions.Logging.Tests
                     decompress_size_limit = 8388608,
                     override_source = default(object),
                     port = GraylogLogPort,
-                    recv_buffer_size = 262144
+                    recv_buffer_size = 212992
                 }
             };
 
