@@ -8,7 +8,7 @@ The following examples are for ASP.NET Core. The [samples](/samples) directory c
 
 ### ASP.NET Core 2.x
 
-In `Progarm.cs`, import the `LoggingBuilder.AddGelf()` extension method from `Gelf.Extensions.Logging` and add the following to your `WebHost` configuration.
+In `Program.cs`, import the `LoggingBuilder.AddGelf()` extension method from `Gelf.Extensions.Logging` and add the following to your `WebHost` configuration.
 
 ```csharp
 public static void Main(string[] args)
