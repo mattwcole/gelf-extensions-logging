@@ -14,14 +14,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Gelf.Extensions.Logging" Version="1.2.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.0.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\Gelf.Extensions.Logging\Gelf.Extensions.Logging.csproj" />
   </ItemGroup>
 
 </Project>

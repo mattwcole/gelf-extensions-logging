@@ -4,7 +4,7 @@
 
 ## Usage
 
-The following examples are for ASP.NET Core. The [samples](/samples) directory contains example console apps. For more information on providers and logging in general, see the aspnetcore [logging documentation](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/logging?tabs=aspnetcore2x#how-to-add-providers).
+The following examples are for ASP.NET Core. The [samples](/samples) directory contains example console apps with and without ASP.NET Core. For more information on providers and logging in general, see the aspnetcore [logging documentation](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/logging?tabs=aspnetcore2x#how-to-add-providers).
 
 ### ASP.NET Core 2.x
 
@@ -127,11 +127,11 @@ In the example above, the message will contain an `order_id` and `order_time`.
 
 ### Log Filtering
 
-When using .NET Core 1.x, log filtering can be overridden by setting a custom filter with `GelfLoggerOptions.Filter`, overriding the default filter that uses `GelfLoggerOptions.LogLevel`. In .NET Core 2.x, the log filtering API should be used to filter the "GELF" provider (details [here](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/logging?tabs=aspnetcore2x#log-filtering)).
+When using .NET Core 2.x, the log filtering API should be used to filter the "GELF" provider (details [here](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/logging?tabs=aspnetcore2x#log-filtering)). In .NET Core 1.x, log filtering can be overridden by setting a custom filter with `GelfLoggerOptions.Filter`, overriding the default filter that uses `GelfLoggerOptions.LogLevel`.
 
 ### Testing
 
-This repository contains a Docker Compose file that can be used for creating local a Graylog stack with a single command using the [Graylog Docker image](https://hub.docker.com/r/graylog2/server/). This can be useful for testing application logs locally. Requires [Docker](https://www.docker.com/get-docker) and Docker Compose.
+This repository contains a Docker Compose file that can be used for creating local a Graylog stack with a single command using the [Graylog Docker image](https://hub.docker.com/r/graylog/graylog/). This can be useful for testing application logs locally. Requires [Docker](https://www.docker.com/get-docker) and Docker Compose.
 
 - `docker-compose up`
 - Navigate to [http://localhost:9000](http://localhost:9000)
