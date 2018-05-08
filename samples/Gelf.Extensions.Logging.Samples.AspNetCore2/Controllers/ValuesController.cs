@@ -18,9 +18,9 @@ namespace Gelf.Extensions.Logging.Samples.AspNetCore2.Controllers
         [HttpGet]
         public IEnumerable<string> Get()
         {
-            using (_logger.BeginScope(("method_name", nameof(Get))))
+            using (_logger.BeginScope(("scope_field", "foo")))
             {
-                var result = new[] {"foo", "bar"};
+                var result = new[] {"bar", "baz"};
 
                 _logger.LogInformation("Returning {value1} and {value2} from controller", result[0], result[1]);
 

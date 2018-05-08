@@ -51,7 +51,7 @@ namespace Gelf.Extensions.Logging
 
             foreach (var field in message.AdditionalFields)
             {
-                messageJson[$"_{field.Key}"] = field.Value as string ?? field.Value.ToString();
+                messageJson[$"_{field.Key}"] = field.Value?.ToString();
             }
 
             return Encoding.UTF8.GetBytes(messageJson.ToString());

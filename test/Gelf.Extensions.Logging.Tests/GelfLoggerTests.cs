@@ -138,6 +138,33 @@ namespace Gelf.Extensions.Logging.Tests
             Assert.Equal("bar", message.second_value);
         }
 
+        [Fact]
+        public async Task Ignores_null_values_in_additional_fields()
+        {
+            var options = _loggerFixture.LoggerOptions;
+            options.AdditionalFields["foo"] = null;
+
+            using (var loggerFactory = _loggerFixture.CreateLoggerFactory(options))
+            {
+                var sut = loggerFactory.CreateLogger(nameof(GelfLoggerTests));
+
+                using (sut.BeginScope(("bar", (string) null)))
+                using (sut.BeginScope(new Dictionary<string, object>
+                {
+                    ["baz"] = null
+                }))
+                {
+                    sut.LogInformation(_faker.Lorem.Sentence());
+                }
+
+                var message = await _graylogFixture.WaitForMessageAsync();
+
+                Assert.Throws<RuntimeBinderException>(() => message.foo);
+                Assert.Throws<RuntimeBinderException>(() => message.bar);
+                Assert.Throws<RuntimeBinderException>(() => message.baz);
+            }
+        }
+
         public void Dispose()
         {
             _loggerFixture.Dispose();
