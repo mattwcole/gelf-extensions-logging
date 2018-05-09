@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace Gelf.Extensions.Logging
 {
-    // http://docs.graylog.org/en/2.2/pages/gelf.html#gelf-payload-specification
+    // http://docs.graylog.org/en/2.4/pages/gelf.html#gelf-payload-specification
     public class GelfMessage
     {
         [JsonProperty("version")]
@@ -20,6 +20,12 @@ namespace Gelf.Extensions.Logging
 
         [JsonProperty("level")]
         public SyslogSeverity Level { get; set; }
+
+        [JsonProperty("eventid", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public int EventId { get; set; }
+
+        [JsonProperty("eventname", NullValueHandling = NullValueHandling.Ignore)]
+        public string EventName { get; set; }
 
         [JsonIgnore]
         public IEnumerable<KeyValuePair<string, object>> AdditionalFields { get; set; }
