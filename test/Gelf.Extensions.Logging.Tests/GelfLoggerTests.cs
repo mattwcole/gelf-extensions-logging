@@ -165,6 +165,24 @@ namespace Gelf.Extensions.Logging.Tests
             }
         }
 
+        [Fact]
+        public async Task Log_EventId()
+        {
+            var options = _loggerFixture.LoggerOptions;
+            
+            using (var loggerFactory = _loggerFixture.CreateLoggerFactory(options))
+            {
+                var sut = loggerFactory.CreateLogger(nameof(GelfLoggerTests));
+
+                sut.LogInformation(new EventId(1, "ok"), _faker.Lorem.Sentence());
+                
+                var message = await _graylogFixture.WaitForMessageAsync();
+
+                Assert.Equal(message.eventid, 1);
+                Assert.Equal(message.EventName, "ok");
+            }
+        }
+
         public void Dispose()
         {
             _loggerFixture.Dispose();
