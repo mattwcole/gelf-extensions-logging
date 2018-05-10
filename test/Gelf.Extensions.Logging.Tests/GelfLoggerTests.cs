@@ -179,7 +179,7 @@ namespace Gelf.Extensions.Logging.Tests
                 var message = await _graylogFixture.WaitForMessageAsync();
 
                 Assert.Equal(message.eventid, 1);
-                Assert.Equal(message.EventName, "ok");
+                Assert.Equal(message.eventname, "ok");
             }
         }
 
