@@ -33,6 +33,8 @@ namespace Gelf.Extensions.Logging
                 Host = _options.LogSource,
                 Level = GetLevel(logLevel),
                 Timestamp = GetTimestamp(),
+                EventId = eventId.Id,
+                EventName = eventId.Name,
                 AdditionalFields = _options.AdditionalFields
                     .Concat(GetStateAdditionalFields(state, exception))
                     .Concat(GetScopeAdditionalFields())
