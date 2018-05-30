@@ -22,7 +22,7 @@ namespace Gelf.Extensions.Logging
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state,
             Exception exception, Func<TState, Exception, string> formatter)
         {
-            if (logLevel == LogLevel.None || !IsEnabled(logLevel))
+            if (!IsEnabled(logLevel))
             {
                 return;
             }
@@ -33,32 +33,23 @@ namespace Gelf.Extensions.Logging
                 Host = _options.LogSource,
                 Level = GetLevel(logLevel),
                 Timestamp = GetTimestamp(),
+                Logger = _name,
+                Exception = exception?.ToString(),
                 EventId = eventId.Id,
                 EventName = eventId.Name,
                 AdditionalFields = _options.AdditionalFields
-                    .Concat(GetStateAdditionalFields(state, exception))
+                    .Concat(GetStateAdditionalFields(state))
                     .Concat(GetScopeAdditionalFields())
             };
 
             _messageProcessor.SendMessage(message);
         }
 
-        private IEnumerable<KeyValuePair<string, object>> GetStateAdditionalFields<TState>(
-            TState state, Exception exception)
+        private static IEnumerable<KeyValuePair<string, object>> GetStateAdditionalFields<TState>(TState state)
         {
-            var defaultAdditionalFields = new Dictionary<string, object>(2)
-            {
-                ["logger"] = _name
-            };
-
-            if (exception != null)
-            {
-                defaultAdditionalFields["exception"] = exception;
-            }
-
             return state is FormattedLogValues stateAdditionalFields
-                ? defaultAdditionalFields.Concat(stateAdditionalFields.Take(stateAdditionalFields.Count - 1))
-                : defaultAdditionalFields;
+                ? stateAdditionalFields.Take(stateAdditionalFields.Count - 1)
+                : Enumerable.Empty<KeyValuePair<string, object>>();
         }
 
         private static IEnumerable<KeyValuePair<string, object>> GetScopeAdditionalFields()
@@ -78,7 +69,7 @@ namespace Gelf.Extensions.Logging
         public bool IsEnabled(LogLevel logLevel)
         {
 #pragma warning disable CS0618 // Type or member is obsolete
-            return _options.Filter == null || _options.Filter(_name, logLevel);
+            return logLevel != LogLevel.None && (_options.Filter == null || _options.Filter(_name, logLevel));
 #pragma warning restore CS0618 // Type or member is obsolete
         }
 

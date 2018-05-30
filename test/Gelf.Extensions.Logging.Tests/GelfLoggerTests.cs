@@ -48,14 +48,31 @@ namespace Gelf.Extensions.Logging.Tests
         [Fact]
         public async Task Includes_exceptions_on_messages()
         {
+            var messageText = _faker.Lorem.Sentence();
             var exception = new Exception("Something went wrong!");
             var sut = _loggerFixture.CreateLogger<GelfLoggerTests>();
 
-            sut.LogError(new EventId(), exception, _faker.Lorem.Sentence());
+            sut.LogError(new EventId(), exception, messageText);
 
             var message = await _graylogFixture.WaitForMessageAsync();
-            
+
+            Assert.Equal(messageText, message.message);
             Assert.Equal(exception.ToString(), message.exception);
+        }
+
+        [Fact]
+        public async Task Includes_event_IDs_on_messages()
+        {
+            var messageText = _faker.Lorem.Sentence();
+
+            var sut = _loggerFixture.CreateLogger<GelfLoggerTests>();
+            sut.LogInformation(new EventId(197, "foo"), messageText);
+
+            var message = await _graylogFixture.WaitForMessageAsync();
+
+            Assert.Equal(messageText, message.message);
+            Assert.Equal(197, message.event_id);
+            Assert.Equal("foo", message.event_name);
         }
 
         [Theory]
@@ -162,24 +179,6 @@ namespace Gelf.Extensions.Logging.Tests
                 Assert.Throws<RuntimeBinderException>(() => message.foo);
                 Assert.Throws<RuntimeBinderException>(() => message.bar);
                 Assert.Throws<RuntimeBinderException>(() => message.baz);
-            }
-        }
-
-        [Fact]
-        public async Task Log_EventId()
-        {
-            var options = _loggerFixture.LoggerOptions;
-            
-            using (var loggerFactory = _loggerFixture.CreateLoggerFactory(options))
-            {
-                var sut = loggerFactory.CreateLogger(nameof(GelfLoggerTests));
-
-                sut.LogInformation(new EventId(1, "ok"), _faker.Lorem.Sentence());
-                
-                var message = await _graylogFixture.WaitForMessageAsync();
-
-                Assert.Equal(message.eventid, 1);
-                Assert.Equal(message.eventname, "ok");
             }
         }
 

@@ -21,10 +21,16 @@ namespace Gelf.Extensions.Logging
         [JsonProperty("level")]
         public SyslogSeverity Level { get; set; }
 
-        [JsonProperty("eventid", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonProperty("_logger")]
+        public string Logger { get; set; }
+
+        [JsonProperty("_exception")]
+        public string Exception { get; set; }
+
+        [JsonProperty("_event_id")]
         public int EventId { get; set; }
 
-        [JsonProperty("eventname", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("_event_name")]
         public string EventName { get; set; }
 
         [JsonIgnore]
