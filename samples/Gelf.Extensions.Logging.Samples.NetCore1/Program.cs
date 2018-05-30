@@ -30,7 +30,7 @@ namespace Gelf.Extensions.Logging.Samples.NetCore1
             finally
             {
                 // The LoggerFactory must be disposed before the program exits to ensure all queued messages are sent.
-                (serviceProvider as IDisposable)?.Dispose();
+                ((IDisposable) serviceProvider).Dispose();
             }
         }
 

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Internal;
 
@@ -8,6 +10,16 @@ namespace Gelf.Extensions.Logging
 {
     public class GelfLogger : ILogger
     {
+        private static readonly Regex AdditionalFieldKeyRegex = new Regex(@"^[\w\.\-]*$");
+        private static readonly HashSet<string> ReservedAdditionalFieldKeys = new HashSet<string>
+        {
+            "id",
+            "logger",
+            "exception",
+            "event_id",
+            "event_name"
+        };
+
         private readonly string _name;
         private readonly GelfMessageProcessor _messageProcessor;
         private readonly GelfLoggerOptions _options;
@@ -27,6 +39,10 @@ namespace Gelf.Extensions.Logging
                 return;
             }
 
+            var additionalFields = _options.AdditionalFields
+                .Concat(GetStateAdditionalFields(state))
+                .Concat(GetScopeAdditionalFields());
+
             var message = new GelfMessage
             {
                 ShortMessage = formatter(state, exception),
@@ -37,33 +53,10 @@ namespace Gelf.Extensions.Logging
                 Exception = exception?.ToString(),
                 EventId = eventId.Id,
                 EventName = eventId.Name,
-                AdditionalFields = _options.AdditionalFields
-                    .Concat(GetStateAdditionalFields(state))
-                    .Concat(GetScopeAdditionalFields())
+                AdditionalFields = ValidateAdditionalFields(additionalFields)
             };
 
             _messageProcessor.SendMessage(message);
-        }
-
-        private static IEnumerable<KeyValuePair<string, object>> GetStateAdditionalFields<TState>(TState state)
-        {
-            return state is FormattedLogValues stateAdditionalFields
-                ? stateAdditionalFields.Take(stateAdditionalFields.Count - 1)
-                : Enumerable.Empty<KeyValuePair<string, object>>();
-        }
-
-        private static IEnumerable<KeyValuePair<string, object>> GetScopeAdditionalFields()
-        {
-            var additionalFields = Enumerable.Empty<KeyValuePair<string, object>>();
-
-            var scope = GelfLogScope.Current;
-            while (scope != null)
-            {
-                additionalFields = additionalFields.Concat(scope.AdditionalFields);
-                scope = scope.Parent;
-            }
-
-            return additionalFields.ToArray();
         }
 
         public bool IsEnabled(LogLevel logLevel)
@@ -86,6 +79,43 @@ namespace Gelf.Extensions.Logging
                     return GelfLogScope.Push(additionalFields);
                 default:
                     return new NoopDisposable();
+            }
+        }
+
+        private static IEnumerable<KeyValuePair<string, object>> GetStateAdditionalFields<TState>(TState state)
+        {
+            return state is FormattedLogValues logValues
+                ? logValues.Take(logValues.Count - 1)
+                : Enumerable.Empty<KeyValuePair<string, object>>();
+        }
+
+        private static IEnumerable<KeyValuePair<string, object>> GetScopeAdditionalFields()
+        {
+            var additionalFields = Enumerable.Empty<KeyValuePair<string, object>>();
+
+            var scope = GelfLogScope.Current;
+            while (scope != null)
+            {
+                additionalFields = additionalFields.Concat(scope.AdditionalFields);
+                scope = scope.Parent;
+            }
+
+            return additionalFields;
+        }
+
+        private static IEnumerable<KeyValuePair<string, object>> ValidateAdditionalFields(
+            IEnumerable<KeyValuePair<string, object>> additionalFields)
+        {
+            foreach (var field in additionalFields)
+            {
+                if (AdditionalFieldKeyRegex.IsMatch(field.Key) && !ReservedAdditionalFieldKeys.Contains(field.Key))
+                {
+                    yield return field;
+                }
+                else
+                {
+                    Debug.Fail($"GELF message has additional field with invalid key \"{field.Key}\".");
+                }
             }
         }
 

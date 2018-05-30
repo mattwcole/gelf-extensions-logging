@@ -5,7 +5,6 @@ using System.IO;
 using System.IO.Compression;
 using System.Net.Sockets;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -19,16 +18,6 @@ namespace Gelf.Extensions.Logging
         private const int MessageHeaderSize = 12;
         private const int MessageIdSize = 8;
         private const int MaxMessageBodySize = MaxChunkSize - MessageHeaderSize;
-
-        private static readonly Regex AdditionalFieldKeyRegex = new Regex(@"^[\w\.\-]*$");
-        private static readonly HashSet<string> ReservedAdditionalFieldKeys = new HashSet<string>
-        {
-            "id",
-            "logger",
-            "exception",
-            "event_id",
-            "event_name"
-        };
 
         private readonly UdpClient _udpClient;
         private readonly GelfLoggerOptions _options;
@@ -63,14 +52,7 @@ namespace Gelf.Extensions.Logging
 
             foreach (var field in message.AdditionalFields)
             {
-                if (AdditionalFieldKeyRegex.IsMatch(field.Key) && !ReservedAdditionalFieldKeys.Contains(field.Key))
-                {
-                    messageJson[$"_{field.Key}"] = field.Value?.ToString();
-                }
-                else
-                {
-                    Debug.WriteLine($"Ignoring GELF message field with invalid key \"{field.Key}\"");
-                }
+                messageJson[$"_{field.Key}"] = field.Value?.ToString();
             }
 
             var messageString = JsonConvert.SerializeObject(messageJson, Formatting.None, new JsonSerializerSettings

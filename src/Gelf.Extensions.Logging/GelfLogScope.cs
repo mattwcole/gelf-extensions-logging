@@ -6,7 +6,7 @@ namespace Gelf.Extensions.Logging
 {
     public class GelfLogScope
     {
-        internal GelfLogScope(IEnumerable<KeyValuePair<string, object>> additionalFields)
+        private GelfLogScope(IEnumerable<KeyValuePair<string, object>> additionalFields)
         {
             AdditionalFields = additionalFields;
         }
