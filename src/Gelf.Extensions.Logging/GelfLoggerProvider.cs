@@ -30,7 +30,16 @@ namespace Gelf.Extensions.Logging
                 throw new ArgumentException("GELF log source is required.", nameof(options));
             }
 
-            var gelfClient = new UdpGelfClient(options);
+            IGelfClient gelfClient = null;
+
+            if (options.Host.StartsWith("http://", StringComparison.CurrentCultureIgnoreCase) || options.Host.StartsWith("https://", StringComparison.CurrentCultureIgnoreCase))
+            {
+                gelfClient = new HttpGelfClient(options);
+            }
+            else
+            {
+                gelfClient = new UdpGelfClient(options);
+            }
 
             _options = options;
             _gelfClient = gelfClient;

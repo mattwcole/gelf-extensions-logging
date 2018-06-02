@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Gelf.Extensions.Logging.Tests
 {
-    public class GelfLoggerTests : IClassFixture<GraylogFixture>, IDisposable
+    public abstract class GelfLoggerTests : IDisposable
     {
         private readonly GraylogFixture _graylogFixture;
         private readonly LoggerFixture _loggerFixture;
@@ -17,7 +17,7 @@ namespace Gelf.Extensions.Logging.Tests
         public GelfLoggerTests(GraylogFixture graylogFixture)
         {
             _graylogFixture = graylogFixture;
-            _loggerFixture = new LoggerFixture();
+            _loggerFixture = new LoggerFixture(graylogFixture);
             _faker = new Faker();
         }
 

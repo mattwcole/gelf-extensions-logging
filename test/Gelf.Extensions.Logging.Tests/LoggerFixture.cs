@@ -7,20 +7,22 @@ namespace Gelf.Extensions.Logging.Tests
     {
         private readonly ILoggerFactory _loggerFactory;
 
-        public LoggerFixture()
+        public LoggerFixture(GraylogFixture graylogFixture)
         {
             TestContext.TestId = Guid.NewGuid().ToString();
             
+            LoggerOptions = new GelfLoggerOptions
+            {
+                Host = graylogFixture.GraylogInputHost,
+                Port = graylogFixture.GraylogInputPort,
+                LogSource = graylogFixture.GetType().FullName
+            };
+
             _loggerFactory = new LoggerFactory();
             _loggerFactory.AddGelf(LoggerOptions);
         }
 
-        public GelfLoggerOptions LoggerOptions => new GelfLoggerOptions
-        {
-            Host = GraylogFixture.GraylogHost,
-            Port = GraylogFixture.GraylogLogPort,
-            LogSource = "Gelf.Extensions.Logging.Tests"
-        };
+        public GelfLoggerOptions LoggerOptions { get; private set; }
 
         public ILoggerFactory CreateLoggerFactory(GelfLoggerOptions options)
         {
