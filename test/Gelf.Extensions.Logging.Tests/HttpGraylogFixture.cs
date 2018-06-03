@@ -10,7 +10,8 @@ namespace Gelf.Extensions.Logging.Tests
     {
         public HttpGraylogFixture() : base()
         {
-            GraylogInputHost = Environment.GetEnvironmentVariable("GRAYLOG_HOST") ?? "http://localhost:12202";
+            var hostname = Environment.GetEnvironmentVariable("GRAYLOG_HOST") ?? "localhost";
+            GraylogInputHost = $"http://{hostname}:12202";
             GraylogInputPort = 12202; // For HTTP port must also be specified in host
         }
 

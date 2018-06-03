@@ -15,7 +15,7 @@ namespace Gelf.Extensions.Logging.Tests
         public int GraylogInputPort; // = 12201;
         private const string GraylogUsername = "admin";
         private const string GraylogPassword = "admin";
-        private const string GraylogApiHost = "localhost";
+        private string GraylogApiHost = Environment.GetEnvironmentVariable("GRAYLOG_HOST") ?? "localhost";
         private const int GraylogApiPort = 9000;
         private const int ApiPollInterval = 200;
         private const int ApiPollTimeout = 10000;
