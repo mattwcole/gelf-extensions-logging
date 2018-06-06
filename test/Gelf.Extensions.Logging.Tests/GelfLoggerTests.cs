@@ -143,6 +143,25 @@ namespace Gelf.Extensions.Logging.Tests
         }
 
         [Fact]
+        public async Task When_duplicate_scope_keys_inner_scope_should_be_used()
+        {
+            var messageText = _faker.Lorem.Sentence();
+
+            var sut = _loggerFixture.CreateLogger<GelfLoggerTests>();
+            using (sut.BeginScope(("foo", "outer")))
+            {
+                using (sut.BeginScope(("foo", "inner")))
+                {
+                    sut.LogCritical(messageText);
+                }
+            }
+
+            var message = await _graylogFixture.WaitForMessageAsync();
+
+            Assert.Equal("inner", message.foo);
+        }
+
+        [Fact]
         public async Task Sends_message_with_additional_fields_from_structured_log()
         {
             var sut = _loggerFixture.CreateLogger<GelfLoggerTests>();
