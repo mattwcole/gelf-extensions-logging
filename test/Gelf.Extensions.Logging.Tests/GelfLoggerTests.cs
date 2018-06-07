@@ -107,6 +107,7 @@ namespace Gelf.Extensions.Logging.Tests
             var options = _loggerFixture.LoggerOptions;
             options.AdditionalFields["foo"] = "foo";
             options.AdditionalFields["bar"] = "bar";
+            options.AdditionalFields["baz"] = 123;
             var messageText = _faker.Lorem.Sentence();
 
             using (var loggerFactory = _loggerFixture.CreateLoggerFactory(options))
@@ -118,6 +119,7 @@ namespace Gelf.Extensions.Logging.Tests
 
                 Assert.Equal("foo", message.foo);
                 Assert.Equal("bar", message.bar);
+                Assert.Equal(123, message.baz);
             }
         }
 
@@ -130,7 +132,8 @@ namespace Gelf.Extensions.Logging.Tests
             using (sut.BeginScope(new Dictionary<string, object>
             {
                 ["baz"] = "baz",
-                ["qux"] = "qux"
+                ["qux"] = "qux",
+                ["quux"] = 123
             }))
             {
                 sut.LogCritical(messageText);
@@ -140,19 +143,21 @@ namespace Gelf.Extensions.Logging.Tests
 
             Assert.Equal("baz", message.baz);
             Assert.Equal("qux", message.qux);
+            Assert.Equal(123, message.quux);
         }
 
         [Fact]
         public async Task Sends_message_with_additional_fields_from_structured_log()
         {
             var sut = _loggerFixture.CreateLogger<GelfLoggerTests>();
-            sut.LogDebug("Structured log line with {first_value} and {second_value}", "foo", "bar");
+            sut.LogDebug("Structured log line with {first_value}, {second_value} and {numeric_value}", "foo", "bar", 123);
 
             var message = await _graylogFixture.WaitForMessageAsync();
 
-            Assert.Equal("Structured log line with foo and bar", message.message);
+            Assert.Equal("Structured log line with foo, bar and 123", message.message);
             Assert.Equal("foo", message.first_value);
             Assert.Equal("bar", message.second_value);
+            Assert.Equal(123, message.numeric_value);
         }
 
         [Fact]
