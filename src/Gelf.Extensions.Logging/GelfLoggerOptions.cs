@@ -63,5 +63,10 @@ namespace Gelf.Extensions.Logging
         /// Additional fields that will be attached to all log messages.
         /// </summary>
         public Dictionary<string, object> AdditionalFields { get; set; } = new Dictionary<string, object>();
+
+        /// <summary>
+        /// Timeout used when sending logs via HTTP(S).
+        /// </summary>
+        public TimeSpan HttpTimeout { get; set; } = TimeSpan.FromSeconds(30);
     }
 }

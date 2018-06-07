@@ -30,7 +30,7 @@ namespace Gelf.Extensions.Logging
             }
 
             _options = options;
-            _gelfClient = CreateGelfClient(options);
+            _gelfClient = CreateGelfClient(_options);
             _messageProcessor = new GelfMessageProcessor(_gelfClient);
             _messageProcessor.Start();
         }

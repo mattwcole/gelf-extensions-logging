@@ -18,7 +18,11 @@ namespace Gelf.Extensions.Logging
                 Port = options.Port
             };
 
-            _httpClient = new HttpClient {BaseAddress = uriBuilder.Uri};
+            _httpClient = new HttpClient
+            {
+                BaseAddress = uriBuilder.Uri,
+                Timeout = options.HttpTimeout
+            };
         }
 
         public async Task SendMessageAsync(GelfMessage message)
