@@ -136,7 +136,10 @@ namespace Gelf.Extensions.Logging.Tests
                 ["quux"] = 123
             }))
             {
-                sut.LogCritical(messageText);
+                using (sut.BeginScope(("quuz", 456.5)))
+                {
+                    sut.LogCritical(messageText);
+                }
             }
 
             var message = await _graylogFixture.WaitForMessageAsync();
@@ -144,6 +147,7 @@ namespace Gelf.Extensions.Logging.Tests
             Assert.Equal("baz", message.baz);
             Assert.Equal("qux", message.qux);
             Assert.Equal(123, message.quux);
+            Assert.Equal(456.5, message.quuz);
         }
 
         [Fact]

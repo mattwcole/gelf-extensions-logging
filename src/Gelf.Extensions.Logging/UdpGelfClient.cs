@@ -60,7 +60,6 @@ namespace Gelf.Extensions.Logging
                 || value is double
                 || value is decimal;
         }
-
         private static byte[] GetMessageBytes(GelfMessage message)
         {
             var messageJson = JObject.FromObject(message);

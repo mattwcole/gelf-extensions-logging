@@ -97,7 +97,7 @@ var options = new GelfLoggerOptions
 
 #### Scoped Fields
 
-Log scopes can also be used to attach fields to a group of related logs. Create a log scope with a [`ValueTuple<string, string>`](https://blogs.msdn.microsoft.com/dotnet/2017/03/09/new-features-in-c-7-0/) or `Dictionary<string, object>` to do so. _Note that any other types passed to `BeginScope()` will be ignored, including `Dictionary<string, string>` and `ValueTuple<string, object>`._
+Log scopes can also be used to attach fields to a group of related logs. Create a log scope with a [`ValueTuple<string, string>`](https://blogs.msdn.microsoft.com/dotnet/2017/03/09/new-features-in-c-7-0/), `ValueTuple<string, int/byte/double>` (or any other numeric value) or `Dictionary<string, object>` to do so. _Note that any other types passed to `BeginScope()` will be ignored, including `Dictionary<string, string>` and `ValueTuple<string, object>`._
 
 ```csharp
 using (_logger.BeginScope(("correlation_id", correlationId)))
