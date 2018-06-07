@@ -14,6 +14,11 @@ namespace Gelf.Extensions.Logging
         }
 
         /// <summary>
+        /// Protocol used to send logs.
+        /// </summary>
+        public GelfProtocol Protocol { get; set; } = GelfProtocol.Udp;
+
+        /// <summary>
         /// GELF server host.
         /// </summary>
         public string Host { get; set; }
@@ -29,14 +34,14 @@ namespace Gelf.Extensions.Logging
         public string LogSource { get; set; }
 
         /// <summary>
-        /// Enable GZip message compression.
+        /// Enable GZip message compression for UDP logging.
         /// </summary>
-        public bool Compress { get; set; } = true;
+        public bool CompressUdp { get; set; } = true;
 
         /// <summary>
-        /// The message size in bytes under which messages will not be compressed.
+        /// The UDP message size in bytes under which messages will not be compressed.
         /// </summary>
-        public int CompressionThreshold { get; set; } = 512;
+        public int UdpCompressionThreshold { get; set; } = 512;
 
         /// <summary>
         /// Function used to filter log events based on logger name and level. Uses <see cref="LogLevel"/> by default.

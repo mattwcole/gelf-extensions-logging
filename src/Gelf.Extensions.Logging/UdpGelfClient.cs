@@ -32,7 +32,7 @@ namespace Gelf.Extensions.Logging
         {
             var messageBytes = Encoding.UTF8.GetBytes(message.ToJson());
 
-            if (_options.Compress && messageBytes.Length > _options.CompressionThreshold)
+            if (_options.CompressUdp && messageBytes.Length > _options.UdpCompressionThreshold)
             {
                 messageBytes = await CompressMessageAsync(messageBytes).ConfigureAwait(false);
             }

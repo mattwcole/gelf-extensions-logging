@@ -42,10 +42,16 @@ namespace Gelf.Extensions.Logging
 
         private static IGelfClient CreateGelfClient(GelfLoggerOptions options)
         {
-            return options.Host.StartsWith("http://", StringComparison.CurrentCultureIgnoreCase) ||
-                   options.Host.StartsWith("https://", StringComparison.CurrentCultureIgnoreCase)
-                ? (IGelfClient) new HttpGelfClient(options)
-                : new UdpGelfClient(options);
+            switch (options.Protocol)
+            {
+                case GelfProtocol.Udp:
+                    return new UdpGelfClient(options);
+                case GelfProtocol.Http:
+                case GelfProtocol.Https:
+                    return new HttpGelfClient(options);
+                default:
+                    throw new ArgumentException("Unknown protocol.", nameof(options));
+            }
         }
 
         public void Dispose()

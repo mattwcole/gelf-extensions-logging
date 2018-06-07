@@ -5,13 +5,20 @@ using System.Threading.Tasks;
 
 namespace Gelf.Extensions.Logging
 {
-    public class HttpGelfClient : IGelfClient, IDisposable
+    public class HttpGelfClient : IGelfClient
     {
         private readonly HttpClient _httpClient;
         
         public HttpGelfClient(GelfLoggerOptions options)
         {
-            _httpClient = new HttpClient {BaseAddress = new Uri(options.Host)};
+            var uriBuilder = new UriBuilder
+            {
+                Scheme = options.Protocol.ToString().ToLower(),
+                Host = options.Host,
+                Port = options.Port
+            };
+
+            _httpClient = new HttpClient {BaseAddress = uriBuilder.Uri};
         }
 
         public async Task SendMessageAsync(GelfMessage message)

@@ -84,7 +84,7 @@ namespace Gelf.Extensions.Logging.Tests
         public async Task Sends_message_with_and_without_compression(int compressionThreshold, int messageSize)
         {
             var options = _loggerFixture.LoggerOptions;
-            options.CompressionThreshold = compressionThreshold;
+            options.UdpCompressionThreshold = compressionThreshold;
             var messageText = new string('*', messageSize);
 
             using (var loggerFactory = _loggerFixture.CreateLoggerFactory(options))
