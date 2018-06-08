@@ -14,10 +14,10 @@ namespace Gelf.Extensions.Logging.Tests
         private readonly LoggerFixture _loggerFixture;
         private readonly Faker _faker;
 
-        public GelfLoggerTests(GraylogFixture graylogFixture)
+        protected GelfLoggerTests(GraylogFixture graylogFixture, LoggerFixture loggerFixture)
         {
             _graylogFixture = graylogFixture;
-            _loggerFixture = new LoggerFixture(graylogFixture);
+            _loggerFixture = loggerFixture;
             _faker = new Faker();
         }
 

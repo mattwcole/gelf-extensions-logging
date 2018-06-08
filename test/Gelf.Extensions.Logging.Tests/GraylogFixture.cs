@@ -11,22 +11,27 @@ namespace Gelf.Extensions.Logging.Tests
 {
     public abstract class GraylogFixture : IAsyncLifetime
     {
-        public string GraylogInputHost; // = Environment.GetEnvironmentVariable("GRAYLOG_HOST") ?? "localhost";
-        public int GraylogInputPort; // = 12201;
+        public static string GraylogHost = Environment.GetEnvironmentVariable("GRAYLOG_HOST") ?? "localhost";
+
         private const string GraylogUsername = "admin";
         private const string GraylogPassword = "admin";
-        private string GraylogApiHost = Environment.GetEnvironmentVariable("GRAYLOG_HOST") ?? "localhost";
         private const int GraylogApiPort = 9000;
         private const int ApiPollInterval = 200;
         private const int ApiPollTimeout = 10000;
 
-        protected readonly HttpClientWrapper _httpClient;
+        private readonly HttpClientWrapper _httpClient;
 
-        public GraylogFixture()
+        protected GraylogFixture()
         {
             _httpClient = new HttpClientWrapper(
-                $"http://{GraylogApiHost}:{GraylogApiPort}/api/", GraylogUsername, GraylogPassword);
+                $"http://{GraylogHost}:{GraylogApiPort}/api/", GraylogUsername, GraylogPassword);
         }
+
+        public abstract int InputPort { get; }
+
+        public abstract string InputType { get; }
+
+        public abstract string InputTitle { get; }
 
         public async Task InitializeAsync()
         {
@@ -51,7 +56,33 @@ namespace Gelf.Extensions.Logging.Tests
             }, retryInterval: 2000, retryTimeout: 60000);
         }
 
-        protected abstract Task<string> CreateInputAsync();
+        private async Task<string> CreateInputAsync()
+        {
+            List<dynamic> existingInputs = (await _httpClient.GetAsync("system/inputs")).inputs;
+            var input = existingInputs.SingleOrDefault(i => i.attributes.port == InputPort);
+            if (input != null)
+            {
+                return input.id;
+            }
+
+            var newInputRequest = new
+            {
+                title = InputTitle,
+                global = true,
+                type = InputType,
+                configuration = new
+                {
+                    bind_address = "0.0.0.0",
+                    decompress_size_limit = 8388608,
+                    override_source = default(object),
+                    port = InputPort,
+                    recv_buffer_size = 212992
+                }
+            };
+
+            var newInputResponse = await _httpClient.PostAsync(newInputRequest, "system/inputs");
+            return newInputResponse.id;
+        }
 
         private Task WaitForInputAsync(string inputId)
         {
