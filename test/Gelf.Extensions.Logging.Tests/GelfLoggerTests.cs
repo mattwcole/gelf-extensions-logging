@@ -8,16 +8,16 @@ using Xunit;
 
 namespace Gelf.Extensions.Logging.Tests
 {
-    public class GelfLoggerTests : IClassFixture<GraylogFixture>, IDisposable
+    public abstract class GelfLoggerTests : IDisposable
     {
         private readonly GraylogFixture _graylogFixture;
         private readonly LoggerFixture _loggerFixture;
         private readonly Faker _faker;
 
-        public GelfLoggerTests(GraylogFixture graylogFixture)
+        protected GelfLoggerTests(GraylogFixture graylogFixture, LoggerFixture loggerFixture)
         {
             _graylogFixture = graylogFixture;
-            _loggerFixture = new LoggerFixture();
+            _loggerFixture = loggerFixture;
             _faker = new Faker();
         }
 
@@ -84,7 +84,7 @@ namespace Gelf.Extensions.Logging.Tests
         public async Task Sends_message_with_and_without_compression(int compressionThreshold, int messageSize)
         {
             var options = _loggerFixture.LoggerOptions;
-            options.CompressionThreshold = compressionThreshold;
+            options.UdpCompressionThreshold = compressionThreshold;
             var messageText = new string('*', messageSize);
 
             using (var loggerFactory = _loggerFixture.CreateLoggerFactory(options))

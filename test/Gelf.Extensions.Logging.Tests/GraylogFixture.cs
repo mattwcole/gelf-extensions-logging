@@ -9,10 +9,10 @@ using Xunit;
 
 namespace Gelf.Extensions.Logging.Tests
 {
-    public class GraylogFixture : IAsyncLifetime
+    public abstract class GraylogFixture : IAsyncLifetime
     {
-        public static readonly string GraylogHost = Environment.GetEnvironmentVariable("GRAYLOG_HOST") ?? "localhost";
-        public const int GraylogLogPort = 12201;
+        public static string GraylogHost = Environment.GetEnvironmentVariable("GRAYLOG_HOST") ?? "localhost";
+
         private const string GraylogUsername = "admin";
         private const string GraylogPassword = "admin";
         private const int GraylogApiPort = 9000;
@@ -21,17 +21,23 @@ namespace Gelf.Extensions.Logging.Tests
 
         private readonly HttpClientWrapper _httpClient;
 
-        public GraylogFixture()
+        protected GraylogFixture()
         {
             _httpClient = new HttpClientWrapper(
                 $"http://{GraylogHost}:{GraylogApiPort}/api/", GraylogUsername, GraylogPassword);
         }
 
+        public abstract int InputPort { get; }
+
+        public abstract string InputType { get; }
+
+        public abstract string InputTitle { get; }
+
         public async Task InitializeAsync()
         {
             await WaitForGraylogAsync();
-            var inputId = await CreateUdpInputAsync();
-            await WaitForUdpInputAsync(inputId);
+            var inputId = await CreateInputAsync();
+            await WaitForInputAsync(inputId);
         }
 
         private Task WaitForGraylogAsync()
@@ -50,10 +56,10 @@ namespace Gelf.Extensions.Logging.Tests
             }, retryInterval: 2000, retryTimeout: 60000);
         }
 
-        private async Task<string> CreateUdpInputAsync()
+        private async Task<string> CreateInputAsync()
         {
             List<dynamic> existingInputs = (await _httpClient.GetAsync("system/inputs")).inputs;
-            var input = existingInputs.SingleOrDefault(i => i.attributes.port == GraylogLogPort);
+            var input = existingInputs.SingleOrDefault(i => i.attributes.port == InputPort);
             if (input != null)
             {
                 return input.id;
@@ -61,15 +67,15 @@ namespace Gelf.Extensions.Logging.Tests
 
             var newInputRequest = new
             {
-                title = "Gelf.Extensions.Logging.Tests",
+                title = InputTitle,
                 global = true,
-                type = "org.graylog2.inputs.gelf.udp.GELFUDPInput",
+                type = InputType,
                 configuration = new
                 {
                     bind_address = "0.0.0.0",
                     decompress_size_limit = 8388608,
                     override_source = default(object),
-                    port = GraylogLogPort,
+                    port = InputPort,
                     recv_buffer_size = 212992
                 }
             };
@@ -78,7 +84,7 @@ namespace Gelf.Extensions.Logging.Tests
             return newInputResponse.id;
         }
 
-        private Task WaitForUdpInputAsync(string inputId)
+        private Task WaitForInputAsync(string inputId)
         {
             return RepeatUntilAsync(async cancellation =>
                 await _httpClient.GetAsync($"system/inputstates/{inputId}", cancellation) != null);
