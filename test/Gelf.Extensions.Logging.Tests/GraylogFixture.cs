@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace Gelf.Extensions.Logging.Tests
@@ -42,12 +43,19 @@ namespace Gelf.Extensions.Logging.Tests
 
         private Task WaitForGraylogAsync()
         {
+            Console.WriteLine("Waiting for Graylog server...");
+
             return RepeatUntilAsync(async cancellation =>
             {
                 try
                 {
-                    await _httpClient.GetAsync("system/stats", cancellation);
-                    return true;
+                    var system = await _httpClient.GetAsync("system", cancellation);
+                    TimeSpan uptime = DateTime.UtcNow - DateTime.Parse(system.started_at.ToString());
+
+                    Console.WriteLine($"Graylog system details:{Environment.NewLine}{JsonConvert.SerializeObject(system)}");
+                    Console.WriteLine($"Graylog server has been up for {uptime.TotalSeconds} seconds");
+
+                    return system.lifecycle == "running";
                 }
                 catch (HttpRequestException)
                 {
@@ -58,6 +66,8 @@ namespace Gelf.Extensions.Logging.Tests
 
         private async Task<string> CreateInputAsync()
         {
+            Console.WriteLine("Creating Graylog input");
+
             List<dynamic> existingInputs = (await _httpClient.GetAsync("system/inputs")).inputs;
             var input = existingInputs.SingleOrDefault(i => i.attributes.port == InputPort);
             if (input != null)
@@ -86,8 +96,19 @@ namespace Gelf.Extensions.Logging.Tests
 
         private Task WaitForInputAsync(string inputId)
         {
-            return RepeatUntilAsync(async cancellation =>
-                await _httpClient.GetAsync($"system/inputstates/{inputId}", cancellation) != null);
+            Console.WriteLine($"Waiting for Graylog input {inputId}...");
+
+            return RepeatUntilAsync(async delegate(CancellationToken cancellation)
+            {
+                var inputState = await _httpClient.GetAsync($"system/inputstates/{inputId}", cancellation);
+
+                if (inputState != null)
+                {
+                    Console.WriteLine($"Graylog input details:{Environment.NewLine}{JsonConvert.SerializeObject(inputState)}");
+                }
+
+                return inputState?.state == "RUNNING";
+            });
         }
 
         public async Task<List<dynamic>> WaitForMessagesAsync(int count = 1)
