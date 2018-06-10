@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.Extensions.Logging;
 
-namespace Gelf.Extensions.Logging.Tests
+namespace Gelf.Extensions.Logging.Tests.Fixtures
 {
     public class LoggerFixture : IDisposable
     {

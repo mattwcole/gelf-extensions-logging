@@ -1,4 +1,4 @@
-﻿namespace Gelf.Extensions.Logging.Tests
+﻿namespace Gelf.Extensions.Logging.Tests.Fixtures
 {
     public class HttpGraylogFixture : GraylogFixture
     {

@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Gelf.Extensions.Logging.Tests.Fixtures;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -12,8 +13,6 @@ namespace Gelf.Extensions.Logging.Tests
 {
     public abstract class GraylogFixture : IAsyncLifetime
     {
-        public static string GraylogHost = Environment.GetEnvironmentVariable("GRAYLOG_HOST") ?? "localhost";
-
         private const string GraylogUsername = "admin";
         private const string GraylogPassword = "admin";
         private const int GraylogApiPort = 9000;
@@ -25,8 +24,10 @@ namespace Gelf.Extensions.Logging.Tests
         protected GraylogFixture()
         {
             _httpClient = new HttpClientWrapper(
-                $"http://{GraylogHost}:{GraylogApiPort}/api/", GraylogUsername, GraylogPassword);
+                $"http://{Host}:{GraylogApiPort}/api/", GraylogUsername, GraylogPassword);
         }
+
+        public string Host => Environment.GetEnvironmentVariable("GRAYLOG_HOST") ?? "localhost";
 
         public abstract int InputPort { get; }
 
@@ -43,12 +44,12 @@ namespace Gelf.Extensions.Logging.Tests
 
         private Task WaitForGraylogAsync()
         {
-            Console.WriteLine("Waiting for Graylog server...");
-
             return RepeatUntilAsync(async cancellation =>
             {
                 try
                 {
+                    Console.WriteLine("Waiting for Graylog server...");
+
                     var system = await _httpClient.GetAsync("system", cancellation);
                     TimeSpan uptime = DateTime.UtcNow - DateTime.Parse(system.started_at.ToString());
 
@@ -66,8 +67,6 @@ namespace Gelf.Extensions.Logging.Tests
 
         private async Task<string> CreateInputAsync()
         {
-            Console.WriteLine("Creating Graylog input");
-
             List<dynamic> existingInputs = (await _httpClient.GetAsync("system/inputs")).inputs;
             var input = existingInputs.SingleOrDefault(i => i.attributes.port == InputPort);
             if (input != null)
@@ -96,10 +95,10 @@ namespace Gelf.Extensions.Logging.Tests
 
         private Task WaitForInputAsync(string inputId)
         {
-            Console.WriteLine($"Waiting for Graylog input {inputId}...");
-
             return RepeatUntilAsync(async delegate(CancellationToken cancellation)
             {
+                Console.WriteLine($"Waiting for Graylog input {inputId}...");
+
                 var inputState = await _httpClient.GetAsync($"system/inputstates/{inputId}", cancellation);
 
                 if (inputState != null)
@@ -108,7 +107,7 @@ namespace Gelf.Extensions.Logging.Tests
                 }
 
                 return inputState?.state == "RUNNING";
-            });
+            }, retryInterval: 2000);
         }
 
         public async Task<List<dynamic>> WaitForMessagesAsync(int count = 1)

@@ -1,4 +1,5 @@
-﻿using Xunit;
+﻿using Gelf.Extensions.Logging.Tests.Fixtures;
+using Xunit;
 
 namespace Gelf.Extensions.Logging.Tests
 {
@@ -7,7 +8,7 @@ namespace Gelf.Extensions.Logging.Tests
         public HttpGelfLoggerTests(HttpGraylogFixture graylogFixture) : base(graylogFixture,
             new LoggerFixture(new GelfLoggerOptions
             {
-                Host = GraylogFixture.GraylogHost,
+                Host = graylogFixture.Host,
                 Port = graylogFixture.InputPort,
                 Protocol = GelfProtocol.Http,
                 LogSource = typeof(HttpGelfLoggerTests).Name
