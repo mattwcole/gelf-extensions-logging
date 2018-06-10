@@ -91,12 +91,18 @@ namespace Gelf.Extensions.Logging
 
         private static IEnumerable<KeyValuePair<string, object>> GetScopeAdditionalFields()
         {
-            var additionalFields = Enumerable.Empty<KeyValuePair<string, object>>();
+            var additionalFields = new Dictionary<string, object>();
 
             var scope = GelfLogScope.Current;
             while (scope != null)
             {
-                additionalFields = additionalFields.Concat(scope.AdditionalFields);
+                foreach(var field in scope.AdditionalFields)
+                {
+                    if(!additionalFields.ContainsKey(field.Key))
+                    {
+                        additionalFields.Add(field.Key, field.Value);
+                    }
+                }
                 scope = scope.Parent;
             }
 
