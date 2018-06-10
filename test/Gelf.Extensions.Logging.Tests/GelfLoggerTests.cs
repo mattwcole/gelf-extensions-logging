@@ -100,7 +100,6 @@ namespace Gelf.Extensions.Logging.Tests
         public async Task Sends_message_with_additional_fields_from_scope()
         {
             var messageText = Faker.Lorem.Sentence();
-
             var sut = LoggerFixture.CreateLogger<GelfLoggerTests>();
             using (sut.BeginScope(new Dictionary<string, object>
             {
@@ -118,6 +117,23 @@ namespace Gelf.Extensions.Logging.Tests
         }
 
         [Fact]
+        public async Task Uses_inner_scope_fields_when_keys_duplicated_in_multiple_scopes()
+        {
+            var sut = LoggerFixture.CreateLogger<GelfLoggerTests>();
+            using (sut.BeginScope(("foo", "outer")))
+            {
+                using (sut.BeginScope(("foo", "inner")))
+                {
+                    sut.LogCritical(Faker.Lorem.Sentence());
+                }
+            }
+
+            var message = await GraylogFixture.WaitForMessageAsync();
+
+            Assert.Equal("inner", message.foo);
+        }
+
+        [Fact]
         public async Task Sends_message_with_additional_fields_from_structured_log()
         {
             var sut = LoggerFixture.CreateLogger<GelfLoggerTests>();
@@ -128,6 +144,20 @@ namespace Gelf.Extensions.Logging.Tests
             Assert.Equal("Structured log line with foo and bar", message.message);
             Assert.Equal("foo", message.first_value);
             Assert.Equal("bar", message.second_value);
+        }
+
+        [Fact]
+        public async Task Uses_structured_log_fields_when_keys_duplicated_in_scope()
+        {
+            var sut = LoggerFixture.CreateLogger<GelfLoggerTests>();
+            using (sut.BeginScope(("foo", "scope")))
+            {
+                sut.LogDebug("Structured log line with {foo}", "structured");
+            }
+
+            var message = await GraylogFixture.WaitForMessageAsync();
+
+            Assert.Equal("structured", message.foo);
         }
 
         [Fact]
