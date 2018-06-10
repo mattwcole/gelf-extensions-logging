@@ -40,8 +40,8 @@ namespace Gelf.Extensions.Logging
             }
 
             var additionalFields = _options.AdditionalFields
-                .Concat(GetStateAdditionalFields(state))
-                .Concat(GetScopeAdditionalFields());
+                .Concat(GetScopeAdditionalFields())
+                .Concat(GetStateAdditionalFields(state));
 
             var message = new GelfMessage
             {
@@ -100,7 +100,7 @@ namespace Gelf.Extensions.Logging
                 scope = scope.Parent;
             }
 
-            return additionalFields;
+            return additionalFields.Reverse();
         }
 
         private static IEnumerable<KeyValuePair<string, object>> ValidateAdditionalFields(
