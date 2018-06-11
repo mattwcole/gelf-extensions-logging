@@ -44,46 +44,6 @@ namespace Gelf.Extensions.Logging
             }
         }
 
-        private static bool IsNumeric(object value)
-        {
-            return value is sbyte
-                || value is byte
-                || value is short
-                || value is ushort
-                || value is int
-                || value is uint
-                || value is long
-                || value is ulong
-                || value is float
-                || value is double
-                || value is decimal;
-        }
-
-        private static byte[] GetMessageBytes(GelfMessage message)
-        {
-            var messageJson = JObject.FromObject(message);
-
-            foreach (var field in message.AdditionalFields)
-            {
-
-                if(IsNumeric(field.Value))
-                {
-                    messageJson[$"_{field.Key}"] = JToken.FromObject(field.Value);
-                }
-                else
-                {
-                    messageJson[$"_{field.Key}"] = field.Value?.ToString();
-                }
-            }
-
-            var messageString = JsonConvert.SerializeObject(messageJson, Formatting.None, new JsonSerializerSettings
-            {
-                NullValueHandling = NullValueHandling.Ignore
-            });
-
-            return Encoding.UTF8.GetBytes(messageString);
-        }
-
         private static async Task<byte[]> CompressMessageAsync(byte[] messageBytes)
         {
             using (var outputStream = new MemoryStream())
