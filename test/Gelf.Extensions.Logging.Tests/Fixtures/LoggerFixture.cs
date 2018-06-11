@@ -1,26 +1,22 @@
 ﻿using System;
 using Microsoft.Extensions.Logging;
 
-namespace Gelf.Extensions.Logging.Tests
+namespace Gelf.Extensions.Logging.Tests.Fixtures
 {
     public class LoggerFixture : IDisposable
     {
         private readonly ILoggerFactory _loggerFactory;
 
-        public LoggerFixture()
+        public LoggerFixture(GelfLoggerOptions options)
         {
             TestContext.TestId = Guid.NewGuid().ToString();
             
+            LoggerOptions = options;
             _loggerFactory = new LoggerFactory();
             _loggerFactory.AddGelf(LoggerOptions);
         }
 
-        public GelfLoggerOptions LoggerOptions => new GelfLoggerOptions
-        {
-            Host = GraylogFixture.GraylogHost,
-            Port = GraylogFixture.GraylogLogPort,
-            LogSource = "Gelf.Extensions.Logging.Tests"
-        };
+        public GelfLoggerOptions LoggerOptions { get; }
 
         public ILoggerFactory CreateLoggerFactory(GelfLoggerOptions options)
         {

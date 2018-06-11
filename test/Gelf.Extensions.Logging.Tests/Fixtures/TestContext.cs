@@ -1,6 +1,6 @@
 ﻿using System.Threading;
 
-namespace Gelf.Extensions.Logging.Tests
+namespace Gelf.Extensions.Logging.Tests.Fixtures
 {
     public static class TestContext
     {
