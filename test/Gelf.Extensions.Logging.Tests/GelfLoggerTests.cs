@@ -2,23 +2,24 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Bogus;
+using Gelf.Extensions.Logging.Tests.Fixtures;
 using Microsoft.CSharp.RuntimeBinder;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Gelf.Extensions.Logging.Tests
 {
-    public class GelfLoggerTests : IClassFixture<GraylogFixture>, IDisposable
+    public abstract class GelfLoggerTests : IDisposable
     {
-        private readonly GraylogFixture _graylogFixture;
-        private readonly LoggerFixture _loggerFixture;
-        private readonly Faker _faker;
+        protected readonly GraylogFixture GraylogFixture;
+        protected readonly LoggerFixture LoggerFixture;
+        protected readonly Faker Faker;
 
-        public GelfLoggerTests(GraylogFixture graylogFixture)
+        protected GelfLoggerTests(GraylogFixture graylogFixture, LoggerFixture loggerFixture)
         {
-            _graylogFixture = graylogFixture;
-            _loggerFixture = new LoggerFixture();
-            _faker = new Faker();
+            GraylogFixture = graylogFixture;
+            LoggerFixture = loggerFixture;
+            Faker = new Faker();
         }
 
         [Theory]
@@ -30,15 +31,15 @@ namespace Gelf.Extensions.Logging.Tests
         [InlineData(LogLevel.Trace, 7)]
         public async Task Sends_message_to_Graylog(LogLevel logLevel, int expectedLevel)
         {
-            var messageText = _faker.Lorem.Sentence();
-            var sut = _loggerFixture.CreateLogger<GelfLoggerTests>();
+            var messageText = Faker.Lorem.Sentence();
+            var sut = LoggerFixture.CreateLogger<GelfLoggerTests>();
 
             sut.Log(logLevel, new EventId(), (object) null, null, (s, e) => messageText);
 
-            var message = await _graylogFixture.WaitForMessageAsync();
+            var message = await GraylogFixture.WaitForMessageAsync();
 
             Assert.NotEmpty(message._id);
-            Assert.Equal(_loggerFixture.LoggerOptions.LogSource, message.source);
+            Assert.Equal(LoggerFixture.LoggerOptions.LogSource, message.source);
             Assert.Equal(messageText, message.message);
             Assert.Equal(expectedLevel, message.level);
             Assert.Equal(typeof(GelfLoggerTests).FullName, message.logger);
@@ -48,13 +49,13 @@ namespace Gelf.Extensions.Logging.Tests
         [Fact]
         public async Task Includes_exceptions_on_messages()
         {
-            var messageText = _faker.Lorem.Sentence();
+            var messageText = Faker.Lorem.Sentence();
             var exception = new Exception("Something went wrong!");
-            var sut = _loggerFixture.CreateLogger<GelfLoggerTests>();
+            var sut = LoggerFixture.CreateLogger<GelfLoggerTests>();
 
             sut.LogError(new EventId(), exception, messageText);
 
-            var message = await _graylogFixture.WaitForMessageAsync();
+            var message = await GraylogFixture.WaitForMessageAsync();
 
             Assert.Equal(messageText, message.message);
             Assert.Equal(exception.ToString(), message.exception);
@@ -63,59 +64,33 @@ namespace Gelf.Extensions.Logging.Tests
         [Fact]
         public async Task Includes_event_IDs_on_messages()
         {
-            var messageText = _faker.Lorem.Sentence();
+            var messageText = Faker.Lorem.Sentence();
 
-            var sut = _loggerFixture.CreateLogger<GelfLoggerTests>();
+            var sut = LoggerFixture.CreateLogger<GelfLoggerTests>();
             sut.LogInformation(new EventId(197, "foo"), messageText);
 
-            var message = await _graylogFixture.WaitForMessageAsync();
+            var message = await GraylogFixture.WaitForMessageAsync();
 
             Assert.Equal(messageText, message.message);
             Assert.Equal(197, message.event_id);
             Assert.Equal("foo", message.event_name);
         }
 
-        [Theory]
-        [InlineData(50, 100)]
-        [InlineData(200, 100)]
-        [InlineData(300, 300)]
-        [InlineData(23000, 25000)]
-        [InlineData(12000, 10000)]
-        public async Task Sends_message_with_and_without_compression(int compressionThreshold, int messageSize)
-        {
-            var options = _loggerFixture.LoggerOptions;
-            options.CompressionThreshold = compressionThreshold;
-            var messageText = new string('*', messageSize);
-
-            using (var loggerFactory = _loggerFixture.CreateLoggerFactory(options))
-            {
-                var sut = loggerFactory.CreateLogger(nameof(GelfLoggerTests));
-                sut.LogInformation(messageText);
-
-                var message = await _graylogFixture.WaitForMessageAsync();
-
-                Assert.NotEmpty(message._id);
-                Assert.Equal(options.LogSource, message.source);
-                Assert.Equal(messageText, message.message);
-                Assert.Equal(6, message.level);
-            }
-        }
-
         [Fact]
         public async Task Sends_message_with_additional_fields_from_options()
         {
-            var options = _loggerFixture.LoggerOptions;
+            var options = LoggerFixture.LoggerOptions;
             options.AdditionalFields["foo"] = "foo";
             options.AdditionalFields["bar"] = "bar";
             options.AdditionalFields["baz"] = 123;
-            var messageText = _faker.Lorem.Sentence();
+            var messageText = Faker.Lorem.Sentence();
 
-            using (var loggerFactory = _loggerFixture.CreateLoggerFactory(options))
+            using (var loggerFactory = LoggerFixture.CreateLoggerFactory(options))
             {
                 var sut = loggerFactory.CreateLogger(nameof(GelfLoggerTests));
                 sut.LogInformation(messageText);
 
-                var message = await _graylogFixture.WaitForMessageAsync();
+                var message = await GraylogFixture.WaitForMessageAsync();
 
                 Assert.Equal("foo", message.foo);
                 Assert.Equal("bar", message.bar);
@@ -126,9 +101,8 @@ namespace Gelf.Extensions.Logging.Tests
         [Fact]
         public async Task Sends_message_with_additional_fields_from_scope()
         {
-            var messageText = _faker.Lorem.Sentence();
-
-            var sut = _loggerFixture.CreateLogger<GelfLoggerTests>();
+            var messageText = Faker.Lorem.Sentence();
+            var sut = LoggerFixture.CreateLogger<GelfLoggerTests>();
             using (sut.BeginScope(new Dictionary<string, object>
             {
                 ["baz"] = "baz",
@@ -139,7 +113,7 @@ namespace Gelf.Extensions.Logging.Tests
                 sut.LogCritical(messageText);
             }
 
-            var message = await _graylogFixture.WaitForMessageAsync();
+            var message = await GraylogFixture.WaitForMessageAsync();
 
             Assert.Equal("baz", message.baz);
             Assert.Equal("qux", message.qux);
@@ -147,12 +121,29 @@ namespace Gelf.Extensions.Logging.Tests
         }
 
         [Fact]
+        public async Task Uses_inner_scope_fields_when_keys_duplicated_in_multiple_scopes()
+        {
+            var sut = LoggerFixture.CreateLogger<GelfLoggerTests>();
+            using (sut.BeginScope(("foo", "outer")))
+            {
+                using (sut.BeginScope(("foo", "inner")))
+                {
+                    sut.LogCritical(Faker.Lorem.Sentence());
+                }
+            }
+
+            var message = await GraylogFixture.WaitForMessageAsync();
+
+            Assert.Equal("inner", message.foo);
+        }
+
+        [Fact]
         public async Task Sends_message_with_additional_fields_from_structured_log()
         {
-            var sut = _loggerFixture.CreateLogger<GelfLoggerTests>();
+            var sut = LoggerFixture.CreateLogger<GelfLoggerTests>();
             sut.LogDebug("Structured log line with {first_value}, {second_value} and {numeric_value}", "foo", "bar", 123);
 
-            var message = await _graylogFixture.WaitForMessageAsync();
+            var message = await GraylogFixture.WaitForMessageAsync();
 
             Assert.Equal("Structured log line with foo, bar and 123", message.message);
             Assert.Equal("foo", message.first_value);
@@ -161,12 +152,26 @@ namespace Gelf.Extensions.Logging.Tests
         }
 
         [Fact]
+        public async Task Uses_structured_log_fields_when_keys_duplicated_in_scope()
+        {
+            var sut = LoggerFixture.CreateLogger<GelfLoggerTests>();
+            using (sut.BeginScope(("foo", "scope")))
+            {
+                sut.LogDebug("Structured log line with {foo}", "structured");
+            }
+
+            var message = await GraylogFixture.WaitForMessageAsync();
+
+            Assert.Equal("structured", message.foo);
+        }
+
+        [Fact]
         public async Task Ignores_null_values_in_additional_fields()
         {
-            var options = _loggerFixture.LoggerOptions;
+            var options = LoggerFixture.LoggerOptions;
             options.AdditionalFields["foo"] = null;
 
-            using (var loggerFactory = _loggerFixture.CreateLoggerFactory(options))
+            using (var loggerFactory = LoggerFixture.CreateLoggerFactory(options))
             {
                 var sut = loggerFactory.CreateLogger(nameof(GelfLoggerTests));
 
@@ -176,10 +181,10 @@ namespace Gelf.Extensions.Logging.Tests
                     ["baz"] = null
                 }))
                 {
-                    sut.LogInformation(_faker.Lorem.Sentence());
+                    sut.LogInformation(Faker.Lorem.Sentence());
                 }
 
-                var message = await _graylogFixture.WaitForMessageAsync();
+                var message = await GraylogFixture.WaitForMessageAsync();
 
                 Assert.Throws<RuntimeBinderException>(() => message.foo);
                 Assert.Throws<RuntimeBinderException>(() => message.bar);
@@ -189,7 +194,7 @@ namespace Gelf.Extensions.Logging.Tests
 
         public void Dispose()
         {
-            _loggerFixture.Dispose();
+            LoggerFixture.Dispose();
         }
     }
 }
