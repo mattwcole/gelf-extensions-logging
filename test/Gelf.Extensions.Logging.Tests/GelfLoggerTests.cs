@@ -82,7 +82,7 @@ namespace Gelf.Extensions.Logging.Tests
             var options = LoggerFixture.LoggerOptions;
             options.AdditionalFields["foo"] = "foo";
             options.AdditionalFields["bar"] = "bar";
-            options.AdditionalFields["baz"] = 123;
+            options.AdditionalFields["quux"] = 123;
             var messageText = Faker.Lorem.Sentence();
 
             using (var loggerFactory = LoggerFixture.CreateLoggerFactory(options))
@@ -94,7 +94,7 @@ namespace Gelf.Extensions.Logging.Tests
 
                 Assert.Equal("foo", message.foo);
                 Assert.Equal("bar", message.bar);
-                Assert.Equal(123, message.baz);
+                Assert.Equal(123, message.quux);
             }
         }
 
