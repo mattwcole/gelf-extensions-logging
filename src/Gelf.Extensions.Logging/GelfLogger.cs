@@ -66,15 +66,42 @@ namespace Gelf.Extensions.Logging
 #pragma warning restore CS0618 // Type or member is obsolete
         }
 
+        private IDisposable BeginValueTupleScope<T>(ValueTuple<string, T> item)
+        {
+            return GelfLogScope.Push(new[]
+            {
+                new KeyValuePair<string, object>(item.Item1, item.Item2)
+            });
+        }
+
         public IDisposable BeginScope<TState>(TState state)
         {
             switch (state)
             {
-                case ValueTuple<string, string> additionalField:
-                    return GelfLogScope.Push(new[]
-                    {
-                        new KeyValuePair<string, object>(additionalField.Item1, additionalField.Item2)
-                    });
+                case ValueTuple<string, string> s:
+                    return BeginValueTupleScope(s);
+                case ValueTuple<string, sbyte> sb:
+                    return BeginValueTupleScope(sb);
+                case ValueTuple<string, byte> b:
+                    return BeginValueTupleScope(b);
+                case ValueTuple<string, short> sh:
+                    return BeginValueTupleScope(sh);
+                case ValueTuple<string, ushort> us:
+                    return BeginValueTupleScope(us);
+                case ValueTuple<string, int> i:
+                    return BeginValueTupleScope(i);
+                case ValueTuple<string, uint> ui:
+                    return BeginValueTupleScope(ui);
+                case ValueTuple<string, long> l:
+                    return BeginValueTupleScope(l);
+                case ValueTuple<string, ulong> ul:
+                    return BeginValueTupleScope(ul);
+                case ValueTuple<string, float> f:
+                    return BeginValueTupleScope(f);
+                case ValueTuple<string, double> d:
+                    return BeginValueTupleScope(d);
+                case ValueTuple<string, decimal> dc:
+                    return BeginValueTupleScope(dc);
                 case IEnumerable<KeyValuePair<string, object>> additionalFields:
                     return GelfLogScope.Push(additionalFields);
                 default:
