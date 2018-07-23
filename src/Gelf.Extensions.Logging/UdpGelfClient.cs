@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Gelf.Extensions.Logging
 {
-    public class UdpGelfClient : IGelfClient, IDisposable
+    public class UdpGelfClient : IGelfClient
     {
         private const int MaxChunks = 128;
         private const int MaxChunkSize = 8192;
@@ -34,13 +34,12 @@ namespace Gelf.Extensions.Logging
 
             if (_options.CompressUdp && messageBytes.Length > _options.UdpCompressionThreshold)
             {
-                messageBytes = await CompressMessageAsync(messageBytes).ConfigureAwait(false);
+                messageBytes = await CompressMessageAsync(messageBytes);
             }
 
             foreach (var messageChunk in ChunkMessage(messageBytes))
             {
-                await _udpClient.SendAsync(messageChunk, messageChunk.Length, _options.Host, _options.Port)
-                    .ConfigureAwait(false);
+                await _udpClient.SendAsync(messageChunk, messageChunk.Length, _options.Host, _options.Port);
             }
         }
 
@@ -50,7 +49,7 @@ namespace Gelf.Extensions.Logging
             {
                 using (var gzipStream = new GZipStream(outputStream, CompressionMode.Compress))
                 {
-                    await gzipStream.WriteAsync(messageBytes, 0, messageBytes.Length).ConfigureAwait(false);
+                    await gzipStream.WriteAsync(messageBytes, 0, messageBytes.Length);
                 }
                 return outputStream.ToArray();
             }

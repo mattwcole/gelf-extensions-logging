@@ -22,7 +22,7 @@ namespace Gelf.Extensions.Logging
 
         public void Start()
         {
-            _processorTask = StartAsync();
+            _processorTask = Task.Run(StartAsync);
         }
 
         private async Task StartAsync()
@@ -31,8 +31,8 @@ namespace Gelf.Extensions.Logging
             {
                 try
                 {
-                    var message = await _messageBuffer.ReceiveAsync().ConfigureAwait(false);
-                    await _gelfClient.SendMessageAsync(message).ConfigureAwait(false);
+                    var message = await _messageBuffer.ReceiveAsync();
+                    await _gelfClient.SendMessageAsync(message);
                 }
                 catch (InvalidOperationException)
                 {

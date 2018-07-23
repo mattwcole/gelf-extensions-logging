@@ -28,7 +28,7 @@ namespace Gelf.Extensions.Logging
         public async Task SendMessageAsync(GelfMessage message)
         {
             var content = new StringContent(message.ToJson(), Encoding.UTF8, "application/json");
-            var result = await _httpClient.PostAsync("gelf", content).ConfigureAwait(false);
+            var result = await _httpClient.PostAsync("gelf", content);
             result.EnsureSuccessStatusCode();
         }
 
