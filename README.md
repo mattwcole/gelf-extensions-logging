@@ -11,45 +11,53 @@ The following examples are for ASP.NET Core. The [samples](/samples) directory c
 In `Program.cs`, import the `LoggingBuilder.AddGelf()` extension method from `Gelf.Extensions.Logging` and add the following to your `WebHost` configuration.
 
 ```csharp
-public static void Main(string[] args)
-{
-    var webHost = new WebHostBuilder()
-        ...
+    var webHost = WebHost
+        .CreateDefaultBuilder(args)
+        .UseStartup<Startup>()
         .ConfigureLogging((context, builder) =>
         {
-            builder.AddConfiguration(context.Configuration.GetSection("Logging"))
-                .AddConsole()
-                .AddDebug()
-                .AddGelf(options =>
-                {
-                    options.Host = "graylog-hostname";
-                    options.LogSource = "application-name";
-                });
-        })
-        .Build();
-
-    ...
-}
-```
-
-You can then configure the "GELF" logger in `appsettings.json` in the same way as other providers. If you would prefer to read the `GelfLoggerOptions` from `appsettings.json` as well you can do so using the parameterless overload of `AddGelf()`, configuring `GelfLoggerOptions` with `IServiceProvider.Configure<GelfLoggerOptions>()`.
-
-```csharp
-public static void Main(string[] args)
-{
-    var webHost = new WebHostBuilder()
-        ...
-        .ConfigureLogging((context, builder) =>
-        {
+            // Read GelfLoggerOptions from appsettings.json
             builder.Services.Configure<GelfLoggerOptions>(context.Configuration.GetSection("Graylog"));
+
+            // Optionally configure GelfLoggerOptions further.
+            builder.Services.PostConfigure<GelfLoggerOptions>(options =>
+                options.AdditionalFields["machine_name"] = Environment.MachineName);
+
+            // Read Logging settings from appsettings.json and add providers.
             builder.AddConfiguration(context.Configuration.GetSection("Logging"))
                 .AddConsole()
                 .AddDebug()
                 .AddGelf();
         })
         .Build();
+```
 
-    ...
+You can then configure the "GELF" provider in `appsettings.json` in the same way as other providers.
+
+```json
+{
+  "Logging": {
+    "IncludeScopes": false, 
+    "LogLevel": {
+      "Default": "Error"
+    },
+    "Console": {
+      "LogLevel": {
+        "Default": "Debug"
+      }
+    },
+    "GELF": {
+      "IncludeScopes": true,
+      "LogLevel": {
+        "Default": "Information"
+      }
+    }
+  },
+  "Graylog": {
+    "Host": "localhost",
+    "Port": 12201,
+    "LogSource": "application-name"
+  }
 }
 ```
 
@@ -65,7 +73,7 @@ public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
         .AddDebug()
         .AddGelf(new GelfLoggerOptions
         {
-            Host = "graylog-hostname",
+            Host = "localhost",
             LogSource = "application-name",
             LogLevel = LogLevel.Information
         });

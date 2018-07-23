@@ -9,7 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Gelf.Extensions.Logging" Version="1.2.1" />
+    <PackageReference Include="Gelf.Extensions.Logging" Version="1.4.0" />
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.8" />
   </ItemGroup>
 

@@ -5,11 +5,12 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Gelf.Extensions.Logging.Tests.Fixtures;
 using Newtonsoft.Json;
 using Xunit;
+using Xunit.Abstractions;
+using Xunit.Sdk;
 
-namespace Gelf.Extensions.Logging.Tests
+namespace Gelf.Extensions.Logging.Tests.Fixtures
 {
     public abstract class GraylogFixture : IAsyncLifetime
     {
@@ -19,10 +20,12 @@ namespace Gelf.Extensions.Logging.Tests
         private const int ApiPollInterval = 200;
         private const int ApiPollTimeout = 10000;
 
+        private readonly IMessageSink _messageSink;
         private readonly HttpClientWrapper _httpClient;
 
-        protected GraylogFixture()
+        protected GraylogFixture(IMessageSink messageSink)
         {
+            _messageSink = messageSink;
             _httpClient = new HttpClientWrapper(
                 $"http://{Host}:{GraylogApiPort}/api/", GraylogUsername, GraylogPassword);
         }
@@ -48,13 +51,13 @@ namespace Gelf.Extensions.Logging.Tests
             {
                 try
                 {
-                    Console.WriteLine("Waiting for Graylog server...");
+                    WriteLine("Waiting for Graylog server...");
 
                     var system = await _httpClient.GetAsync("system", cancellation);
                     TimeSpan uptime = DateTime.UtcNow - DateTime.Parse(system.started_at.ToString());
 
-                    Console.WriteLine($"Graylog system details:{Environment.NewLine}{JsonConvert.SerializeObject(system)}");
-                    Console.WriteLine($"Graylog server has been up for {uptime.TotalSeconds} seconds");
+                    WriteLine($"Graylog system details:{Environment.NewLine}{JsonConvert.SerializeObject(system)}");
+                    WriteLine($"Graylog server has been up for {uptime.TotalSeconds} seconds");
 
                     return system.lifecycle == "running";
                 }
@@ -97,13 +100,13 @@ namespace Gelf.Extensions.Logging.Tests
         {
             return RepeatUntilAsync(async delegate(CancellationToken cancellation)
             {
-                Console.WriteLine($"Waiting for Graylog input {inputId}...");
+                WriteLine($"Waiting for Graylog input {inputId}...");
 
                 var inputState = await _httpClient.GetAsync($"system/inputstates/{inputId}", cancellation);
 
                 if (inputState != null)
                 {
-                    Console.WriteLine($"Graylog input details:{Environment.NewLine}{JsonConvert.SerializeObject(inputState)}");
+                    WriteLine($"Graylog input details:{Environment.NewLine}{JsonConvert.SerializeObject(inputState)}");
                 }
 
                 return inputState?.state == "RUNNING";
@@ -141,6 +144,11 @@ namespace Gelf.Extensions.Logging.Tests
                     await Task.Delay(retryInterval, cts.Token);
                 }
             }
+        }
+
+        protected void WriteLine(string message)
+        {
+            _messageSink.OnMessage(new DiagnosticMessage(message));
         }
 
         public Task DisposeAsync()
