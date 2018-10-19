@@ -82,6 +82,10 @@ public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
 }
 ```
 
+### Http Headers
+
+Http headers can be added to all logs using Http Protocol by setting them in `GelfLoggerOptions.Headers`.
+
 ### Additional Fields
 
 By default, `logger` and `exception` fields are included on all messages (the `exception` field is only added when an exception is passed to the logger). There are a number of other ways to attach data to logs.

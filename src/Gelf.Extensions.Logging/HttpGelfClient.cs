@@ -23,6 +23,14 @@ namespace Gelf.Extensions.Logging
                 BaseAddress = uriBuilder.Uri,
                 Timeout = options.HttpTimeout
             };
+
+            if (options.Headers != null && options.Headers.Count > 0)
+            {
+                foreach (var header in options.Headers)
+                {
+                    _httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
+                }
+            }
         }
 
         public async Task SendMessageAsync(GelfMessage message)
