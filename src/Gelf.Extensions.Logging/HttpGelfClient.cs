@@ -24,9 +24,9 @@ namespace Gelf.Extensions.Logging
                 Timeout = options.HttpTimeout
             };
 
-            if (options.Headers != null && options.Headers.Count > 0)
+            if (options.HttpHeaders != null)
             {
-                foreach (var header in options.Headers)
+                foreach (var header in options.HttpHeaders)
                 {
                     _httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
                 }
