@@ -34,6 +34,6 @@ namespace Gelf.Extensions.Logging
         public string EventName { get; set; }
 
         [JsonIgnore]
-        public IEnumerable<KeyValuePair<string, object>> AdditionalFields { get; set; }
+        public IReadOnlyCollection<KeyValuePair<string, object>> AdditionalFields { get; set; }
     }
 }

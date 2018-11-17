@@ -26,7 +26,7 @@ namespace Gelf.Extensions.Logging
 
             foreach (var field in message.AdditionalFields)
             {
-                if(IsNumeric(field.Value))
+                if (IsNumeric(field.Value))
                 {
                     messageJson[$"_{field.Key}"] = JToken.FromObject(field.Value);
                 }
