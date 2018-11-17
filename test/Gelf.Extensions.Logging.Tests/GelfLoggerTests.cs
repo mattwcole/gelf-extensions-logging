@@ -125,6 +125,27 @@ namespace Gelf.Extensions.Logging.Tests
         }
 
         [Fact]
+        public async Task Sends_message_without_additional_fields_from_scope_when_scope_is_not_included()
+        {
+            var options = LoggerFixture.LoggerOptions;
+            options.IncludeScopes = false;
+            options.AdditionalFields.Add("test_id", TestContext.TestId);
+
+            using (var loggerFactory = LoggerFixture.CreateLoggerFactory(options))
+            {
+                var sut = loggerFactory.CreateLogger(nameof(GelfLoggerTests));
+                using (sut.BeginScope(("foo", "bar")))
+                {
+                    sut.LogInformation(Faker.Lorem.Sentence());
+                }
+
+                var message = await GraylogFixture.WaitForMessageAsync();
+
+                Assert.Throws<RuntimeBinderException>(() => message.foo);
+            }
+        }
+
+        [Fact]
         public async Task Uses_inner_scope_fields_when_keys_duplicated_in_multiple_scopes()
         {
             var sut = LoggerFixture.CreateLogger<GelfLoggerTests>();
@@ -145,14 +166,13 @@ namespace Gelf.Extensions.Logging.Tests
         public async Task Sends_message_with_additional_fields_from_structured_log()
         {
             var sut = LoggerFixture.CreateLogger<GelfLoggerTests>();
-            sut.LogDebug("Structured log line with {first_value}, {second_value} and {numeric_value}", "foo", "bar", 123);
+            sut.LogDebug("Structured log line with {first_value} and {second_value}", "foo", 123);
 
             var message = await GraylogFixture.WaitForMessageAsync();
 
-            Assert.Equal("Structured log line with foo, bar and 123", message.message);
+            Assert.Equal("Structured log line with foo and 123", message.message);
             Assert.Equal("foo", message.first_value);
-            Assert.Equal("bar", message.second_value);
-            Assert.Equal(123, message.numeric_value);
+            Assert.Equal(123, message.second_value);
         }
 
         [Fact]

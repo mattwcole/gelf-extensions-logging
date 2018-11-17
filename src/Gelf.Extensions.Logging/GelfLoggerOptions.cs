@@ -14,6 +14,11 @@ namespace Gelf.Extensions.Logging
         }
 
         /// <summary>
+        /// Enable/disable additional fields added via log scopes.
+        /// </summary>
+        public bool IncludeScopes { get; set; } = true;
+
+        /// <summary>
         /// Protocol used to send logs.
         /// </summary>
         public GelfProtocol Protocol { get; set; } = GelfProtocol.Udp;
@@ -29,7 +34,7 @@ namespace Gelf.Extensions.Logging
         public int Port { get; set; } = 12201;
 
         /// <summary>
-        /// Log source name mapped to the GELF host field.
+        /// Log source name mapped to the GELF host field (required).
         /// </summary>
         public string LogSource { get; set; }
 
@@ -47,15 +52,15 @@ namespace Gelf.Extensions.Logging
         /// Function used to filter log events based on logger name and level. Uses <see cref="LogLevel"/> by default.
         /// </summary>
 #if NETSTANDARD2_0
-        [Obsolete("Logs should be filtered using LoggerFactory.")]
+        [Obsolete("Filter logs with app config or Microsoft.Extensions.Logging.FilterLoggingBuilderExtensions.")]
 #endif
         public Func<string, LogLevel, bool> Filter { get; set; }
 
         /// <summary>
-        /// The log level used by the default filter. This is ignored if <see cref="Filter"/> is customised.
+        /// The log level used by the default filter. This is ignored if <see cref="Filter"/> is overridden.
         /// </summary>
 #if NETSTANDARD2_0
-        [Obsolete("Logs should be filtered using LoggerFactory.")]
+        [Obsolete("Filter logs with app config or Microsoft.Extensions.Logging.FilterLoggingBuilderExtensions.")]
 #endif
         public LogLevel LogLevel { get; set; } = LogLevel.Information;
 

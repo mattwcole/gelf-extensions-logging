@@ -10,7 +10,7 @@ namespace Gelf.Extensions.Logging
 {
     public class GelfLogger : ILogger
     {
-        private static readonly Regex AdditionalFieldKeyRegex = new Regex(@"^[\w\.\-]*$");
+        private static readonly Regex AdditionalFieldKeyRegex = new Regex(@"^[\w\.\-]*$", RegexOptions.Compiled);
         private static readonly HashSet<string> ReservedAdditionalFieldKeys = new HashSet<string>
         {
             "id",
@@ -53,7 +53,7 @@ namespace Gelf.Extensions.Logging
                 Exception = exception?.ToString(),
                 EventId = eventId.Id,
                 EventName = eventId.Name,
-                AdditionalFields = ValidateAdditionalFields(additionalFields)
+                AdditionalFields = ValidateAdditionalFields(additionalFields).ToArray()
             };
 
             _messageProcessor.SendMessage(message);
@@ -66,7 +66,7 @@ namespace Gelf.Extensions.Logging
 #pragma warning restore CS0618 // Type or member is obsolete
         }
 
-        private IDisposable BeginValueTupleScope<T>(ValueTuple<string, T> item)
+        private static IDisposable BeginValueTupleScope<T>(ValueTuple<string, T> item)
         {
             return GelfLogScope.Push(new[]
             {
@@ -102,6 +102,8 @@ namespace Gelf.Extensions.Logging
                     return BeginValueTupleScope(d);
                 case ValueTuple<string, decimal> dc:
                     return BeginValueTupleScope(dc);
+                case ValueTuple<string, object> o:
+                    return BeginValueTupleScope(o);
                 case IEnumerable<KeyValuePair<string, object>> additionalFields:
                     return GelfLogScope.Push(additionalFields);
                 default:
@@ -116,9 +118,14 @@ namespace Gelf.Extensions.Logging
                 : Enumerable.Empty<KeyValuePair<string, object>>();
         }
 
-        private static IEnumerable<KeyValuePair<string, object>> GetScopeAdditionalFields()
+        private IEnumerable<KeyValuePair<string, object>> GetScopeAdditionalFields()
         {
             var additionalFields = Enumerable.Empty<KeyValuePair<string, object>>();
+
+            if (!_options.IncludeScopes)
+            {
+                return additionalFields;
+            }
 
             var scope = GelfLogScope.Current;
             while (scope != null)
@@ -168,8 +175,8 @@ namespace Gelf.Extensions.Logging
 
         private static double GetTimestamp()
         {
-            var totalMiliseconds = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-            var totalSeconds = totalMiliseconds / 1000d;
+            var totalMilliseconds = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            var totalSeconds = totalMilliseconds / 1000d;
             return Math.Round(totalSeconds, 2);
         }
 

@@ -16,18 +16,15 @@ var webHost = WebHost
     .UseStartup<Startup>()
     .ConfigureLogging((context, builder) =>
     {
-        // Read GelfLoggerOptions from appsettings.json
-        builder.Services.Configure<GelfLoggerOptions>(context.Configuration.GetSection("Graylog"));
-
-        // Optionally configure GelfLoggerOptions further.
-        builder.Services.PostConfigure<GelfLoggerOptions>(options =>
-            options.AdditionalFields["machine_name"] = Environment.MachineName);
-
         // Read Logging settings from appsettings.json and add providers.
         builder.AddConfiguration(context.Configuration.GetSection("Logging"))
             .AddConsole()
             .AddDebug()
             .AddGelf();
+
+        // Optionally configure GELF logger further.
+        builder.Services.PostConfigure<GelfLoggerOptions>(options =>
+            options.AdditionalFields["machine_name"] = Environment.MachineName);
     })
     .Build();
 ```
@@ -37,7 +34,7 @@ You can then configure the "GELF" provider in `appsettings.json` in the same way
 ```json
 {
   "Logging": {
-    "IncludeScopes": false, 
+    "IncludeScopes": false,
     "LogLevel": {
       "Default": "Error"
     },
@@ -47,19 +44,19 @@ You can then configure the "GELF" provider in `appsettings.json` in the same way
       }
     },
     "GELF": {
+      "Host": "localhost",
+      "Port": 12201,
+      "LogSource": "application-name",
       "IncludeScopes": true,
       "LogLevel": {
         "Default": "Information"
       }
     }
-  },
-  "Graylog": {
-    "Host": "localhost",
-    "Port": 12201,
-    "LogSource": "application-name"
   }
 }
 ```
+
+For a full list of options e.g. UDP/HTTP(S) settings, see [`GelfLoggerOptions`](src/Gelf.Extensions.Logging/GelfLoggerOptions.cs).
 
 ### ASP.NET Core 1.x
 
@@ -81,10 +78,6 @@ public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
     ...
 }
 ```
-
-### Http Headers
-
-Http headers can be added to all logs using Http Protocol by setting them in `GelfLoggerOptions.Headers`.
 
 ### Additional Fields
 

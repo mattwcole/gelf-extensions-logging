@@ -2,7 +2,10 @@
 
 using System;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace Gelf.Extensions.Logging
 {
@@ -16,7 +19,10 @@ namespace Gelf.Extensions.Logging
         /// <returns></returns>
         public static ILoggingBuilder AddGelf(this ILoggingBuilder builder)
         {
+            builder.AddConfiguration();
             builder.Services.AddSingleton<ILoggerProvider, GelfLoggerProvider>();
+            builder.Services.TryAddSingleton<IConfigureOptions<GelfLoggerOptions>, GelfLoggerOptionsSetup>();
+
             return builder;
         }
 
@@ -29,6 +35,11 @@ namespace Gelf.Extensions.Logging
         /// <returns></returns>
         public static ILoggingBuilder AddGelf(this ILoggingBuilder builder, Action<GelfLoggerOptions> configure)
         {
+            if (configure == null)
+            {
+                throw new ArgumentNullException(nameof(configure));
+            }
+
             builder.AddGelf();
             builder.Services.Configure(configure);
             return builder;
