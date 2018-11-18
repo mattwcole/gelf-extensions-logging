@@ -13,7 +13,6 @@ namespace Gelf.Extensions.Logging
     {
         /// <summary>
         /// Registers a <see cref="GelfLoggerProvider"/> with the service collection.
-        /// <see cref="GelfLoggerOptions"/> must be configured with service collection when using this method.
         /// </summary>
         /// <param name="builder"></param>
         /// <returns></returns>
@@ -27,8 +26,8 @@ namespace Gelf.Extensions.Logging
         }
 
         /// <summary>
-        /// Registers a <see cref="GelfLoggerProvider"/> and <see cref="GelfLoggerOptions"/>
-        /// with the service collection.
+        /// Registers a <see cref="GelfLoggerProvider"/> with the service collection allowing logger options
+        /// to be customised.
         /// </summary>
         /// <param name="builder"></param>
         /// <param name="configure"></param>

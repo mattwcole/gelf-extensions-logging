@@ -15,11 +15,10 @@ namespace Gelf.Extensions.Logging.Samples.NetCore2
                 .Build();
 
             var serviceCollection = new ServiceCollection()
-                .Configure<GelfLoggerOptions>(configuration.GetSection("Graylog"))
                 .AddLogging(loggingBuilder => loggingBuilder
                     .AddConfiguration(configuration.GetSection("Logging"))
                     .AddConsole()
-                    .AddGelf());
+                    .AddGelf(options => options.AdditionalFields["machine_name"] = Environment.MachineName));
 
             // The LoggerFactory must be disposed before the program exits to ensure all queued messages are sent.
             using (var serviceProvider = serviceCollection.BuildServiceProvider())

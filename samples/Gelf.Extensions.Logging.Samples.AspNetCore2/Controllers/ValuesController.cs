@@ -22,7 +22,7 @@ namespace Gelf.Extensions.Logging.Samples.AspNetCore2.Controllers
             {
                 var result = new[] {"bar", "baz"};
 
-                _logger.LogInformation("Returning {value1} and {value2} from controller", result[0], result[1]);
+                _logger.LogTrace("Returning {value1} and {value2} from controller", result[0], result[1]);
 
                 return result;
             }

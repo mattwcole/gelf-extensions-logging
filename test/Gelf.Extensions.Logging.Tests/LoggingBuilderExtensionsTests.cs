@@ -19,18 +19,14 @@ namespace Gelf.Extensions.Logging.Tests
                 {
                     ["Logging:GELF:IncludeScopes"] = "false",
                     ["Logging:GELF:Protocol"] = "HTTP",
-                    ["Logging:GELF:Host"] = "graylog-host-1",
-                    ["Graylog:IncludeScopes"] = "true",
-                    ["Graylog:Protocol"] = "HTTPS",
-                    ["Graylog:Host"] = "graylog-host2"
+                    ["Logging:GELF:Host"] = "graylog-host-1"
                 }
             }).Build();
 
             var serviceCollection = new ServiceCollection()
-                .PostConfigure<GelfLoggerOptions>(o => o.LogSource = "post-configured-log-source")
                 .AddLogging(loggingBuilder => loggingBuilder
                     .AddConfiguration(configuration.GetSection("Logging"))
-                    .AddGelf());
+                    .AddGelf(o => o.LogSource = "post-configured-log-source"));
 
             using (var provider = serviceCollection.BuildServiceProvider())
             {
@@ -64,7 +60,7 @@ namespace Gelf.Extensions.Logging.Tests
                 .PostConfigure<GelfLoggerOptions>(o => o.LogSource = "post-configured-log-source")
                 .AddLogging(loggingBuilder => loggingBuilder
                     .AddConfiguration(configuration.GetSection("Logging"))
-                    .AddGelf());
+                    .AddGelf(o => o.LogSource = "post-configured-log-source"));
 
             using (var provider = serviceCollection.BuildServiceProvider())
             {

@@ -16,25 +16,26 @@ var webHost = WebHost
     .UseStartup<Startup>()
     .ConfigureLogging((context, builder) =>
     {
-        // Read Logging settings from appsettings.json and add providers.
         builder.AddConfiguration(context.Configuration.GetSection("Logging"))
             .AddConsole()
             .AddDebug()
-            .AddGelf();
-
-        // Optionally configure GELF logger further.
-        builder.Services.PostConfigure<GelfLoggerOptions>(options =>
-            options.AdditionalFields["machine_name"] = Environment.MachineName);
+            .AddGelf(options =>
+            {
+                // Optional customisation applied on top of settings in Logging:GELF configuration section.
+                options.LogSource = context.HostingEnvironment.ApplicationName;
+                options.AdditionalFields["machine_name"] = Environment.MachineName;
+                options.AdditionalFields["app_version"] = Assembly.GetEntryAssembly()
+                    .GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
+            });
     })
     .Build();
 ```
 
-You can then configure the "GELF" provider in `appsettings.json` in the same way as other providers.
+Logger options are taken from the "GELF" provider section in `appsettings.json` in the same way as other providers. These can be customised further in code as in the above example.
 
-```json
+```json5
 {
   "Logging": {
-    "IncludeScopes": false,
     "LogLevel": {
       "Default": "Error"
     },
@@ -45,11 +46,14 @@ You can then configure the "GELF" provider in `appsettings.json` in the same way
     },
     "GELF": {
       "Host": "localhost",
-      "Port": 12201,
-      "LogSource": "application-name",
-      "IncludeScopes": true,
+      "Port": 12201,    // Not required if using default 12201.
+      "LogSource": "my-app-name",   // Required if not set in code.
+      "AdditionalFields": {     // Optional fields added to all logs.
+        "project_name": "my-project-name"
+      },
       "LogLevel": {
-        "Default": "Information"
+        "Default": "Information",
+        "Some.Namespace": "Debug"
       }
     }
   }
@@ -102,7 +106,7 @@ var options = new GelfLoggerOptions
 
 #### Scoped Fields
 
-Log scopes can also be used to attach fields to a group of related logs. Create a log scope with a [`ValueTuple<string, string>`](https://blogs.msdn.microsoft.com/dotnet/2017/03/09/new-features-in-c-7-0/), `ValueTuple<string, int/byte/double>` (or any other numeric value) or `Dictionary<string, object>` to do so. _Note that any other types passed to `BeginScope()` will be ignored, including `Dictionary<string, string>` and `ValueTuple<string, object>`._
+Log scopes can also be used to attach fields to a group of related logs. Create a log scope with a [`ValueTuple<string, string>`](https://blogs.msdn.microsoft.com/dotnet/2017/03/09/new-features-in-c-7-0/), `ValueTuple<string, int/byte/double>` (or any other numeric value) or `Dictionary<string, object>` to do so. _Note that any other types passed to `BeginScope()` will be ignored, including `Dictionary<string, string>`._
 
 ```csharp
 using (_logger.BeginScope(("correlation_id", correlationId)))
@@ -145,4 +149,4 @@ This repository contains a Docker Compose file that can be used for creating loc
 
 ## Contributing
 
-Pull requests welcome! In order to run tests, first run `docker-compose up` to create the Graylog stack. Existing tests log messages and use the Graylog API to assert that they have been sent correctly. A UDP input will be created as part of the test setup (if not already present), so there is no need to create one manually. Build and tests are run on CI in Docker, meaning it is possible to run the build locally in identical conditions using `docker-compose -f docker-compose.ci.build.yml -f docker-compose.yml up --abort-on-container-exit`.
+Pull requests welcome! In order to run tests, first run `docker-compose up` to create the Graylog stack. Existing tests log messages and use the Graylog API to assert that they have been sent correctly. A UDP input will be created as part of the test setup (if not already present), so there is no need to create one manually. Build and tests are run on CI in Docker, meaning it is possible to run the build locally under identical conditions using `docker-compose -f docker-compose.ci.build.yml -f docker-compose.yml up --abort-on-container-exit`.
