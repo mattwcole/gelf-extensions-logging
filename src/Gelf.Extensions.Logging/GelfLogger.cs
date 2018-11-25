@@ -177,7 +177,7 @@ namespace Gelf.Extensions.Logging
         {
             var totalMilliseconds = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             var totalSeconds = totalMilliseconds / 1000d;
-            return Math.Round(totalSeconds, 2);
+            return Math.Round(totalSeconds, 3);
         }
 
         private class NoopDisposable : IDisposable
