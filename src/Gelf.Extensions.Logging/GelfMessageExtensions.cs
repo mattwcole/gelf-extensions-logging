@@ -22,7 +22,11 @@ namespace Gelf.Extensions.Logging
 
         public static string ToJson(this GelfMessage message)
         {
-            var messageJson = JObject.FromObject(message);
+            var messageJson = JObject.FromObject(message, new JsonSerializer
+            {
+                NullValueHandling = NullValueHandling.Ignore,
+                Formatting = Formatting.None
+            });
 
             foreach (var field in message.AdditionalFields)
             {
@@ -36,10 +40,7 @@ namespace Gelf.Extensions.Logging
                 }
             }
 
-            return JsonConvert.SerializeObject(messageJson, Formatting.None, new JsonSerializerSettings
-            {
-                NullValueHandling = NullValueHandling.Ignore
-            });
+            return messageJson.ToString(Formatting.None);
         }
     }
 }
