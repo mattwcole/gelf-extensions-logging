@@ -6,6 +6,12 @@
 
 The following examples are for ASP.NET Core. The [samples](/samples) directory contains example console apps with and without ASP.NET Core. For more information on providers and logging in general, see the aspnetcore [logging documentation](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/logging?tabs=aspnetcore2x#how-to-add-providers).
 
+Start by installing the [NuGet package](https://www.nuget.org/packages/Gelf.Extensions.Logging).
+
+```sh
+dotnet add package Gelf.Extensions.Logging
+```
+
 ### ASP.NET Core 2.x
 
 In `Program.cs`, import the `LoggingBuilder.AddGelf()` extension method from `Gelf.Extensions.Logging` and add the following to your `WebHost` configuration.
@@ -46,9 +52,9 @@ Logger options are taken from the "GELF" provider section in `appsettings.json` 
     },
     "GELF": {
       "Host": "localhost",
-      "Port": 12201,    // Not required if using default 12201.
-      "LogSource": "my-app-name",   // Required if not set in code.
-      "AdditionalFields": {     // Optional fields added to all logs.
+      "Port": 12201,                // Not required if using default 12201.
+      "LogSource": "my-app-name",   // Not required if set in code.
+      "AdditionalFields": {         // Optional fields added to all logs.
         "project_name": "my-project-name"
       },
       "LogLevel": {
@@ -137,6 +143,14 @@ In the example above, the message will contain an `order_id` and `order_time`.
 ### Log Filtering
 
 When using .NET Core 2.x, the log filtering API should be used to filter the "GELF" provider (details [here](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/logging?tabs=aspnetcore2x#log-filtering)). In .NET Core 1.x, log filtering can be overridden by setting a custom filter with `GelfLoggerOptions.Filter`, overriding the default filter that uses `GelfLoggerOptions.LogLevel`.
+
+### Compression
+
+By default UDP messages of 512 bytes or more are GZipped however this behaviour can be disabled or altered with `GelfLoggerOptions.CompressUdp` and `GelfLoggerOptions.UdpCompressionThreshold`.
+
+#### Logstash GELF Plugin
+
+The [Logstash GELF plugin](https://www.elastic.co/guide/en/logstash/current/plugins-inputs-gelf.html) requires entirely compressed UDP messages in which case the UDP compression threshold must be set to 0.
 
 ### Testing
 
