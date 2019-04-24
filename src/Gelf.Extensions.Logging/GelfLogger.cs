@@ -113,8 +113,8 @@ namespace Gelf.Extensions.Logging
 
         private static IEnumerable<KeyValuePair<string, object>> GetStateAdditionalFields<TState>(TState state)
         {
-            return state is FormattedLogValues logValues
-                ? logValues.Take(logValues.Count - 1)
+            return state is /*FormattedLogValues*/IEnumerable<KeyValuePair<string, object>> logValues
+                ? logValues.Take(logValues.Count() - 1)
                 : Enumerable.Empty<KeyValuePair<string, object>>();
         }
 
