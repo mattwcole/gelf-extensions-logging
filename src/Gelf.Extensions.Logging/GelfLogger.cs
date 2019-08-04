@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Internal;
 
 namespace Gelf.Extensions.Logging
 {
@@ -17,7 +16,8 @@ namespace Gelf.Extensions.Logging
             "logger",
             "exception",
             "event_id",
-            "event_name"
+            "event_name",
+            "message_template"
         };
 
         private readonly string _name;
@@ -113,8 +113,8 @@ namespace Gelf.Extensions.Logging
 
         private static IEnumerable<KeyValuePair<string, object>> GetStateAdditionalFields<TState>(TState state)
         {
-            return state is /*FormattedLogValues*/IEnumerable<KeyValuePair<string, object>> logValues
-                ? logValues.Take(logValues.Count() - 1)
+            return state is IEnumerable<KeyValuePair<string, object>> logValues
+                ? logValues
                 : Enumerable.Empty<KeyValuePair<string, object>>();
         }
 
@@ -137,18 +137,25 @@ namespace Gelf.Extensions.Logging
             return additionalFields.Reverse();
         }
 
-        private static IEnumerable<KeyValuePair<string, object>> ValidateAdditionalFields(
+        private IEnumerable<KeyValuePair<string, object>> ValidateAdditionalFields(
             IEnumerable<KeyValuePair<string, object>> additionalFields)
         {
             foreach (var field in additionalFields)
             {
-                if (AdditionalFieldKeyRegex.IsMatch(field.Key) && !ReservedAdditionalFieldKeys.Contains(field.Key))
+                if (field.Key != "{OriginalFormat}")
                 {
-                    yield return field;
+                    if (AdditionalFieldKeyRegex.IsMatch(field.Key) && !ReservedAdditionalFieldKeys.Contains(field.Key))
+                    {
+                        yield return field;
+                    }
+                    else
+                    {
+                        Debug.Fail($"GELF message has additional field with invalid key \"{field.Key}\".");
+                    }
                 }
-                else
+                else if (_options.IncludeMessageTemplates)
                 {
-                    Debug.Fail($"GELF message has additional field with invalid key \"{field.Key}\".");
+                    yield return new KeyValuePair<string, object>("message_template", field.Value);
                 }
             }
         }

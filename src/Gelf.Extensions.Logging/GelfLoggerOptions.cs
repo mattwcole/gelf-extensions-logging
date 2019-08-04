@@ -78,5 +78,10 @@ namespace Gelf.Extensions.Logging
         /// Timeout used when sending logs via HTTP(S).
         /// </summary>
         public TimeSpan HttpTimeout { get; set; } = TimeSpan.FromSeconds(30);
+
+        /// <summary>
+        /// Include a field with the original message template before structured log parameters are replaced.
+        /// </summary>
+        public bool IncludeMessageTemplates { get; set; }
     }
 }

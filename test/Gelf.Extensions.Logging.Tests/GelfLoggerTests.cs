@@ -44,6 +44,7 @@ namespace Gelf.Extensions.Logging.Tests
             Assert.Equal(expectedLevel, message.level);
             Assert.Equal(typeof(GelfLoggerTests).FullName, message.logger);
             Assert.Throws<RuntimeBinderException>(() => message.exception);
+            Assert.Throws<RuntimeBinderException>(() => message.message_template);
         }
 
         [Fact]
@@ -213,6 +214,27 @@ namespace Gelf.Extensions.Logging.Tests
                 Assert.Throws<RuntimeBinderException>(() => message.foo);
                 Assert.Throws<RuntimeBinderException>(() => message.bar);
                 Assert.Throws<RuntimeBinderException>(() => message.baz);
+            }
+        }
+
+        [Fact]
+        public async Task Sends_message_templates_when_enabled()
+        {
+            var options = LoggerFixture.LoggerOptions;
+            options.IncludeMessageTemplates = true;
+            options.AdditionalFields.Add("test_id", TestContext.TestId);
+
+            using (var loggerFactory = LoggerFixture.CreateLoggerFactory(options))
+            {
+                var messageTemplate = "This is a message template {foo} {bar}";
+                var sut = loggerFactory.CreateLogger(nameof(GelfLoggerTests));
+                sut.LogInformation(messageTemplate, "FOO", "BAR");
+
+                var message = await GraylogFixture.WaitForMessageAsync();
+
+                Assert.Equal(messageTemplate, message.message_template);
+                Assert.Equal("FOO", message.foo);
+                Assert.Equal("BAR", message.bar);
             }
         }
 
