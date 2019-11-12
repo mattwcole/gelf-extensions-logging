@@ -3,29 +3,43 @@ version: "3"
 services:
   mongo:
     image: mongo:3
+    networks:
+      - graylog
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:5.6.9
+    image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.8.2
     environment:
       - http.host=0.0.0.0
-      - xpack.security.enabled=false
+      - transport.host=localhost
+      - network.host=0.0.0.0
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     ulimits:
       memlock:
         soft: -1
         hard: -1
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+    networks:
+      - graylog
   graylog:
-    image: graylog/graylog:2.4
+    image: graylog/graylog:3.1
     environment:
       - GRAYLOG_PASSWORD_SECRET="!ux*lAfQVjaRT8iI"
       - GRAYLOG_ROOT_PASSWORD_SHA2=8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918
-      - GRAYLOG_WEB_ENDPOINT_URI=http://127.0.0.1:9000/api
+      - GRAYLOG_HTTP_EXTERNAL_URI=http://127.0.0.1:9000/
+    networks:
+      - graylog
     depends_on:
       - mongo
       - elasticsearch
     ports:
-      - "9000:9000"
-      - "514:514"
-      - "514:514/udp"
-      - "12201:12201"
-      - "12201:12201/udp"
-      - "12202:12202"
+      - 9000:9000
+      - 1514:1514
+      - 1514:1514/udp
+      - 12201:12201
+      - 12201:12201/udp
+      - 12202:12202
+networks:
+  graylog:
+    driver: bridge

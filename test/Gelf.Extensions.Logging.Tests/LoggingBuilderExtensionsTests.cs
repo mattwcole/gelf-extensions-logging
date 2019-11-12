@@ -28,15 +28,13 @@ namespace Gelf.Extensions.Logging.Tests
                     .AddConfiguration(configuration.GetSection("Logging"))
                     .AddGelf(o => o.LogSource = "post-configured-log-source"));
 
-            using (var provider = serviceCollection.BuildServiceProvider())
-            {
-                var options = provider.GetRequiredService<IOptions<GelfLoggerOptions>>();
+            using var provider = serviceCollection.BuildServiceProvider();
+            var options = provider.GetRequiredService<IOptions<GelfLoggerOptions>>();
 
-                Assert.False(options.Value.IncludeScopes);
-                Assert.Equal(GelfProtocol.Http, options.Value.Protocol);
-                Assert.Equal("graylog-host-1", options.Value.Host);
-                Assert.Equal("post-configured-log-source", options.Value.LogSource);
-            }
+            Assert.False(options.Value.IncludeScopes);
+            Assert.Equal(GelfProtocol.Http, options.Value.Protocol);
+            Assert.Equal("graylog-host-1", options.Value.Host);
+            Assert.Equal("post-configured-log-source", options.Value.LogSource);
         }
 
         [Fact]
@@ -62,15 +60,13 @@ namespace Gelf.Extensions.Logging.Tests
                     .AddConfiguration(configuration.GetSection("Logging"))
                     .AddGelf(o => o.LogSource = "post-configured-log-source"));
 
-            using (var provider = serviceCollection.BuildServiceProvider())
-            {
-                var options = provider.GetRequiredService<IOptions<GelfLoggerOptions>>();
+            using var provider = serviceCollection.BuildServiceProvider();
+            var options = provider.GetRequiredService<IOptions<GelfLoggerOptions>>();
 
-                Assert.False(options.Value.IncludeScopes);
-                Assert.Equal(GelfProtocol.Https, options.Value.Protocol);
-                Assert.Equal("graylog-host-2", options.Value.Host);
-                Assert.Equal("post-configured-log-source", options.Value.LogSource);
-            }
+            Assert.False(options.Value.IncludeScopes);
+            Assert.Equal(GelfProtocol.Https, options.Value.Protocol);
+            Assert.Equal("graylog-host-2", options.Value.Host);
+            Assert.Equal("post-configured-log-source", options.Value.LogSource);
         }
     }
 }
