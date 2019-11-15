@@ -61,9 +61,7 @@ namespace Gelf.Extensions.Logging
 
         public bool IsEnabled(LogLevel logLevel)
         {
-#pragma warning disable CS0618 // Type or member is obsolete
-            return logLevel != LogLevel.None && _options.Filter?.Invoke(_name, logLevel) != false;
-#pragma warning restore CS0618 // Type or member is obsolete
+            return logLevel != LogLevel.None;
         }
 
         private static IDisposable BeginValueTupleScope<T>((string Item1, T item2) item)

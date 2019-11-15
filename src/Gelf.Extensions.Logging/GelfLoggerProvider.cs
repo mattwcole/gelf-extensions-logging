@@ -4,9 +4,7 @@ using Microsoft.Extensions.Options;
 
 namespace Gelf.Extensions.Logging
 {
-#if NETSTANDARD2_0
     [ProviderAlias("GELF")]
-#endif
     public class GelfLoggerProvider : ILoggerProvider
     {
         private readonly GelfLoggerOptions _options;
