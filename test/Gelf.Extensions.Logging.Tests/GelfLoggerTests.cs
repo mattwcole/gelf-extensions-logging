@@ -86,17 +86,15 @@ namespace Gelf.Extensions.Logging.Tests
             options.AdditionalFields["quux"] = 123;
             var messageText = Faker.Lorem.Sentence();
 
-            using (var loggerFactory = LoggerFixture.CreateLoggerFactory(options))
-            {
-                var sut = loggerFactory.CreateLogger(nameof(GelfLoggerTests));
-                sut.LogInformation(messageText);
+            using var loggerFactory = LoggerFixture.CreateLoggerFactory(options);
+            var sut = loggerFactory.CreateLogger(nameof(GelfLoggerTests));
+            sut.LogInformation(messageText);
 
-                var message = await GraylogFixture.WaitForMessageAsync();
+            var message = await GraylogFixture.WaitForMessageAsync();
 
-                Assert.Equal("foo", message.foo);
-                Assert.Equal("bar", message.bar);
-                Assert.Equal(123, message.quux);
-            }
+            Assert.Equal("foo", message.foo);
+            Assert.Equal("bar", message.bar);
+            Assert.Equal(123, message.quux);
         }
 
         [Fact]
@@ -132,18 +130,16 @@ namespace Gelf.Extensions.Logging.Tests
             options.IncludeScopes = false;
             options.AdditionalFields.Add("test_id", TestContext.TestId);
 
-            using (var loggerFactory = LoggerFixture.CreateLoggerFactory(options))
+            using var loggerFactory = LoggerFixture.CreateLoggerFactory(options);
+            var sut = loggerFactory.CreateLogger(nameof(GelfLoggerTests));
+            using (sut.BeginScope(("foo", "bar")))
             {
-                var sut = loggerFactory.CreateLogger(nameof(GelfLoggerTests));
-                using (sut.BeginScope(("foo", "bar")))
-                {
-                    sut.LogInformation(Faker.Lorem.Sentence());
-                }
-
-                var message = await GraylogFixture.WaitForMessageAsync();
-
-                Assert.Throws<RuntimeBinderException>(() => message.foo);
+                sut.LogInformation(Faker.Lorem.Sentence());
             }
+
+            var message = await GraylogFixture.WaitForMessageAsync();
+
+            Assert.Throws<RuntimeBinderException>(() => message.foo);
         }
 
         [Fact]
@@ -196,25 +192,23 @@ namespace Gelf.Extensions.Logging.Tests
             var options = LoggerFixture.LoggerOptions;
             options.AdditionalFields["foo"] = null;
 
-            using (var loggerFactory = LoggerFixture.CreateLoggerFactory(options))
+            using var loggerFactory = LoggerFixture.CreateLoggerFactory(options);
+            var sut = loggerFactory.CreateLogger(nameof(GelfLoggerTests));
+
+            using (sut.BeginScope(("bar", (string) null)))
+            using (sut.BeginScope(new Dictionary<string, object>
             {
-                var sut = loggerFactory.CreateLogger(nameof(GelfLoggerTests));
-
-                using (sut.BeginScope(("bar", (string) null)))
-                using (sut.BeginScope(new Dictionary<string, object>
-                {
-                    ["baz"] = null
-                }))
-                {
-                    sut.LogInformation(Faker.Lorem.Sentence());
-                }
-
-                var message = await GraylogFixture.WaitForMessageAsync();
-
-                Assert.Throws<RuntimeBinderException>(() => message.foo);
-                Assert.Throws<RuntimeBinderException>(() => message.bar);
-                Assert.Throws<RuntimeBinderException>(() => message.baz);
+                ["baz"] = null
+            }))
+            {
+                sut.LogInformation(Faker.Lorem.Sentence());
             }
+
+            var message = await GraylogFixture.WaitForMessageAsync();
+
+            Assert.Throws<RuntimeBinderException>(() => message.foo);
+            Assert.Throws<RuntimeBinderException>(() => message.bar);
+            Assert.Throws<RuntimeBinderException>(() => message.baz);
         }
 
         [Fact]
@@ -224,18 +218,16 @@ namespace Gelf.Extensions.Logging.Tests
             options.IncludeMessageTemplates = true;
             options.AdditionalFields.Add("test_id", TestContext.TestId);
 
-            using (var loggerFactory = LoggerFixture.CreateLoggerFactory(options))
-            {
-                var messageTemplate = "This is a message template {foo} {bar}";
-                var sut = loggerFactory.CreateLogger(nameof(GelfLoggerTests));
-                sut.LogInformation(messageTemplate, "FOO", "BAR");
+            using var loggerFactory = LoggerFixture.CreateLoggerFactory(options);
+            var messageTemplate = "This is a message template {foo} {bar}";
+            var sut = loggerFactory.CreateLogger(nameof(GelfLoggerTests));
+            sut.LogInformation(messageTemplate, "FOO", "BAR");
 
-                var message = await GraylogFixture.WaitForMessageAsync();
+            var message = await GraylogFixture.WaitForMessageAsync();
 
-                Assert.Equal(messageTemplate, message.message_template);
-                Assert.Equal("FOO", message.foo);
-                Assert.Equal("BAR", message.bar);
-            }
+            Assert.Equal(messageTemplate, message.message_template);
+            Assert.Equal("FOO", message.foo);
+            Assert.Equal("BAR", message.bar);
         }
 
         public void Dispose()

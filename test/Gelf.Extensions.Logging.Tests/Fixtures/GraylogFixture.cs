@@ -14,9 +14,10 @@ namespace Gelf.Extensions.Logging.Tests.Fixtures
 {
     public abstract class GraylogFixture : IAsyncLifetime
     {
-        private const string GraylogUsername = "admin";
-        private const string GraylogPassword = "admin";
-        private const int GraylogApiPort = 9000;
+        private const string ApiUsername = "admin";
+        private const string ApiPassword = "admin";
+        private const string ApiClientName = "Gelf.Extensions.Logging.Tests";
+        private const int ApiPort = 9000;
         private const int ApiPollInterval = 200;
         private const int ApiPollTimeout = 10000;
 
@@ -27,16 +28,16 @@ namespace Gelf.Extensions.Logging.Tests.Fixtures
         {
             _messageSink = messageSink;
             _httpClient = new HttpClientWrapper(
-                $"http://{Host}:{GraylogApiPort}/api/", GraylogUsername, GraylogPassword);
+                $"http://{Host}:{ApiPort}/api/", ApiUsername, ApiPassword, ApiClientName);
         }
 
-        public string Host => Environment.GetEnvironmentVariable("GRAYLOG_HOST") ?? "localhost";
+        public static string Host => Environment.GetEnvironmentVariable("GRAYLOG_HOST") ?? "localhost";
 
         public abstract int InputPort { get; }
 
-        public abstract string InputType { get; }
+        protected abstract string InputType { get; }
 
-        public abstract string InputTitle { get; }
+        protected abstract string InputTitle { get; }
 
         public async Task InitializeAsync()
         {
@@ -85,10 +86,7 @@ namespace Gelf.Extensions.Logging.Tests.Fixtures
                 configuration = new
                 {
                     bind_address = "0.0.0.0",
-                    decompress_size_limit = 8388608,
-                    override_source = default(object),
-                    port = InputPort,
-                    recv_buffer_size = 212992
+                    port = InputPort
                 }
             };
 
@@ -137,12 +135,10 @@ namespace Gelf.Extensions.Logging.Tests.Fixtures
         private static async Task RepeatUntilAsync(Func<CancellationToken, Task<bool>> predicate,
             int retryInterval = ApiPollInterval, int retryTimeout = ApiPollTimeout)
         {
-            using (var cts = new CancellationTokenSource(retryTimeout))
+            using var cts = new CancellationTokenSource(retryTimeout);
+            while (!await predicate(cts.Token))
             {
-                while (!await predicate(cts.Token))
-                {
-                    await Task.Delay(retryInterval, cts.Token);
-                }
+                await Task.Delay(retryInterval, cts.Token);
             }
         }
 

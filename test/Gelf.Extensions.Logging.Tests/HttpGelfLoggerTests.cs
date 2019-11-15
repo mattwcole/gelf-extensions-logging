@@ -8,7 +8,7 @@ namespace Gelf.Extensions.Logging.Tests
         public HttpGelfLoggerTests(HttpGraylogFixture graylogFixture) : base(graylogFixture,
             new LoggerFixture(new GelfLoggerOptions
             {
-                Host = graylogFixture.Host,
+                Host = GraylogFixture.Host,
                 Port = graylogFixture.InputPort,
                 Protocol = GelfProtocol.Http,
                 LogSource = typeof(HttpGelfLoggerTests).Name

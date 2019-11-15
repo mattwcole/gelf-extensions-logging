@@ -14,7 +14,7 @@ namespace Gelf.Extensions.Logging.Tests.Fixtures
     {
         private readonly HttpClient _httpClient;
 
-        public HttpClientWrapper(string baseAddress, string username, string password)
+        public HttpClientWrapper(string baseAddress, string username, string password, string clientName)
         {
             _httpClient = new HttpClient
             {
@@ -26,6 +26,8 @@ namespace Gelf.Extensions.Logging.Tests.Fixtures
                     Accept = {new MediaTypeWithQualityHeaderValue("application/json")}
                 }
             };
+
+            _httpClient.DefaultRequestHeaders.Add("X-Requested-By", clientName);
         }
 
         public async Task<dynamic> GetAsync(string url, CancellationToken cancellation = default)

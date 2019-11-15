@@ -10,8 +10,8 @@ namespace Gelf.Extensions.Logging.Tests.Fixtures
 
         public override int InputPort => 12202;
 
-        public override string InputType => "org.graylog2.inputs.gelf.http.GELFHttpInput";
+        protected override string InputType => "org.graylog2.inputs.gelf.http.GELFHttpInput";
 
-        public override string InputTitle => "Gelf.Extensions.Logging.Tests.Http";
+        protected override string InputTitle => "Gelf.Extensions.Logging.Tests.Http";
     }
 }

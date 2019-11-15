@@ -10,12 +10,12 @@ namespace Gelf.Extensions.Logging.Tests
         public UdpGelfLoggerTests(UdpGraylogFixture graylogFixture) : base(graylogFixture,
             new LoggerFixture(new GelfLoggerOptions
             {
-                Host = graylogFixture.Host,
+                Host = GraylogFixture.Host,
                 Port = graylogFixture.InputPort,
                 Protocol = GelfProtocol.Udp,
                 LogSource = typeof(UdpGelfLoggerTests).Name
             }))
-        {   
+        {
         }
 
         [Theory]
@@ -30,18 +30,16 @@ namespace Gelf.Extensions.Logging.Tests
             options.UdpCompressionThreshold = compressionThreshold;
             var messageText = new string('*', messageSize);
 
-            using (var loggerFactory = LoggerFixture.CreateLoggerFactory(options))
-            {
-                var sut = loggerFactory.CreateLogger(nameof(GelfLoggerTests));
-                sut.LogInformation(messageText);
+            using var loggerFactory = LoggerFixture.CreateLoggerFactory(options);
+            var sut = loggerFactory.CreateLogger(nameof(GelfLoggerTests));
+            sut.LogInformation(messageText);
 
-                var message = await GraylogFixture.WaitForMessageAsync();
+            var message = await GraylogFixture.WaitForMessageAsync();
 
-                Assert.NotEmpty(message._id);
-                Assert.Equal(options.LogSource, message.source);
-                Assert.Equal(messageText, message.message);
-                Assert.Equal(6, message.level);
-            }
+            Assert.NotEmpty(message._id);
+            Assert.Equal(options.LogSource, message.source);
+            Assert.Equal(messageText, message.message);
+            Assert.Equal(6, message.level);
         }
     }
 }
