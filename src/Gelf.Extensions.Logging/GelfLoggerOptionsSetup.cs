@@ -1,6 +1,4 @@
-﻿#if NETSTANDARD2_0
-
-using Microsoft.Extensions.Logging.Configuration;
+﻿using Microsoft.Extensions.Logging.Configuration;
 using Microsoft.Extensions.Options;
 
 namespace Gelf.Extensions.Logging
@@ -13,5 +11,3 @@ namespace Gelf.Extensions.Logging
         }
     }
 }
-
-#endif

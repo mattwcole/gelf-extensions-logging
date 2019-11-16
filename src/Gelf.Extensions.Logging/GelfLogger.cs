@@ -61,54 +61,34 @@ namespace Gelf.Extensions.Logging
 
         public bool IsEnabled(LogLevel logLevel)
         {
-#pragma warning disable CS0618 // Type or member is obsolete
-            return logLevel != LogLevel.None && _options.Filter?.Invoke(_name, logLevel) != false;
-#pragma warning restore CS0618 // Type or member is obsolete
-        }
-
-        private static IDisposable BeginValueTupleScope<T>(ValueTuple<string, T> item)
-        {
-            return GelfLogScope.Push(new[]
-            {
-                new KeyValuePair<string, object>(item.Item1, item.Item2)
-            });
+            return logLevel != LogLevel.None;
         }
 
         public IDisposable BeginScope<TState>(TState state)
         {
-            switch (state)
+            return state switch
             {
-                case ValueTuple<string, string> s:
-                    return BeginValueTupleScope(s);
-                case ValueTuple<string, sbyte> sb:
-                    return BeginValueTupleScope(sb);
-                case ValueTuple<string, byte> b:
-                    return BeginValueTupleScope(b);
-                case ValueTuple<string, short> sh:
-                    return BeginValueTupleScope(sh);
-                case ValueTuple<string, ushort> us:
-                    return BeginValueTupleScope(us);
-                case ValueTuple<string, int> i:
-                    return BeginValueTupleScope(i);
-                case ValueTuple<string, uint> ui:
-                    return BeginValueTupleScope(ui);
-                case ValueTuple<string, long> l:
-                    return BeginValueTupleScope(l);
-                case ValueTuple<string, ulong> ul:
-                    return BeginValueTupleScope(ul);
-                case ValueTuple<string, float> f:
-                    return BeginValueTupleScope(f);
-                case ValueTuple<string, double> d:
-                    return BeginValueTupleScope(d);
-                case ValueTuple<string, decimal> dc:
-                    return BeginValueTupleScope(dc);
-                case ValueTuple<string, object> o:
-                    return BeginValueTupleScope(o);
-                case IEnumerable<KeyValuePair<string, object>> additionalFields:
-                    return GelfLogScope.Push(additionalFields);
-                default:
-                    return new NoopDisposable();
-            }
+                IEnumerable<KeyValuePair<string, object>> fields => GelfLogScope.Push(fields),
+                ValueTuple<string, string> field => BeginValueTupleScope(field),
+                ValueTuple<string, sbyte> field => BeginValueTupleScope(field),
+                ValueTuple<string, byte> field => BeginValueTupleScope(field),
+                ValueTuple<string, short> field => BeginValueTupleScope(field),
+                ValueTuple<string, ushort> field => BeginValueTupleScope(field),
+                ValueTuple<string, int> field => BeginValueTupleScope(field),
+                ValueTuple<string, uint> field => BeginValueTupleScope(field),
+                ValueTuple<string, long> field => BeginValueTupleScope(field),
+                ValueTuple<string, ulong> field => BeginValueTupleScope(field),
+                ValueTuple<string, float> field => BeginValueTupleScope(field),
+                ValueTuple<string, double> field => BeginValueTupleScope(field),
+                ValueTuple<string, decimal> field => BeginValueTupleScope(field),
+                ValueTuple<string, object> field => BeginValueTupleScope(field),
+                _ => new NoopDisposable()
+            };
+
+            static IDisposable BeginValueTupleScope((string, object) field) => GelfLogScope.Push(new[]
+            {
+                new KeyValuePair<string, object>(field.Item1, field.Item2)
+            });
         }
 
         private static IEnumerable<KeyValuePair<string, object>> GetStateAdditionalFields<TState>(TState state)
@@ -162,22 +142,16 @@ namespace Gelf.Extensions.Logging
 
         private static SyslogSeverity GetLevel(LogLevel logLevel)
         {
-            switch (logLevel)
+            return logLevel switch
             {
-                case LogLevel.Trace:
-                case LogLevel.Debug:
-                    return SyslogSeverity.Debug;
-                case LogLevel.Information:
-                    return SyslogSeverity.Informational;
-                case LogLevel.Warning:
-                    return SyslogSeverity.Warning;
-                case LogLevel.Error:
-                    return SyslogSeverity.Error;
-                case LogLevel.Critical:
-                    return SyslogSeverity.Critical;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(logLevel), logLevel, "Log level not supported.");
-            }
+                LogLevel.Trace => SyslogSeverity.Debug,
+                LogLevel.Debug => SyslogSeverity.Debug,
+                LogLevel.Information => SyslogSeverity.Informational,
+                LogLevel.Warning => SyslogSeverity.Warning,
+                LogLevel.Error => SyslogSeverity.Error,
+                LogLevel.Critical => SyslogSeverity.Critical,
+                _ => throw new ArgumentOutOfRangeException(nameof(logLevel), logLevel, "Log level not supported.")
+            };
         }
 
         private static double GetTimestamp()

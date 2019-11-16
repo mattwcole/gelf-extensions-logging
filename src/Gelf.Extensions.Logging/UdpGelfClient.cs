@@ -45,14 +45,12 @@ namespace Gelf.Extensions.Logging
 
         private static async Task<byte[]> CompressMessageAsync(byte[] messageBytes)
         {
-            using (var outputStream = new MemoryStream())
+            using var outputStream = new MemoryStream();
+            using (var gzipStream = new GZipStream(outputStream, CompressionMode.Compress))
             {
-                using (var gzipStream = new GZipStream(outputStream, CompressionMode.Compress))
-                {
-                    await gzipStream.WriteAsync(messageBytes, 0, messageBytes.Length);
-                }
-                return outputStream.ToArray();
+                await gzipStream.WriteAsync(messageBytes, 0, messageBytes.Length);
             }
+            return outputStream.ToArray();
         }
 
         private IEnumerable<byte[]> ChunkMessage(byte[] messageBytes)

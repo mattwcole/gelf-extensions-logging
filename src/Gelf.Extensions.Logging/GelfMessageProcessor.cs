@@ -9,7 +9,8 @@ namespace Gelf.Extensions.Logging
     {
         private readonly IGelfClient _gelfClient;
         private readonly BufferBlock<GelfMessage> _messageBuffer;
-        private Task _processorTask;
+
+        private Task _processorTask = Task.CompletedTask;
 
         public GelfMessageProcessor(IGelfClient gelfClient)
         {

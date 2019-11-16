@@ -4,15 +4,13 @@ using Microsoft.Extensions.Options;
 
 namespace Gelf.Extensions.Logging
 {
-#if NETSTANDARD2_0
     [ProviderAlias("GELF")]
-#endif
     public class GelfLoggerProvider : ILoggerProvider
     {
         private readonly GelfLoggerOptions _options;
         private readonly GelfMessageProcessor _messageProcessor;
         private readonly IGelfClient _gelfClient;
-        
+
         public GelfLoggerProvider(IOptions<GelfLoggerOptions> options) : this(options.Value)
         {
         }
@@ -42,16 +40,13 @@ namespace Gelf.Extensions.Logging
 
         private static IGelfClient CreateGelfClient(GelfLoggerOptions options)
         {
-            switch (options.Protocol)
+            return options.Protocol switch
             {
-                case GelfProtocol.Udp:
-                    return new UdpGelfClient(options);
-                case GelfProtocol.Http:
-                case GelfProtocol.Https:
-                    return new HttpGelfClient(options);
-                default:
-                    throw new ArgumentException("Unknown protocol.", nameof(options));
-            }
+                GelfProtocol.Udp => (IGelfClient) new UdpGelfClient(options),
+                GelfProtocol.Http => new HttpGelfClient(options),
+                GelfProtocol.Https => new HttpGelfClient(options),
+                _ => throw new ArgumentException("Unknown protocol.", nameof(options))
+            };
         }
 
         public void Dispose()

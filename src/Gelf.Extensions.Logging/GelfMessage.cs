@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace Gelf.Extensions.Logging
@@ -10,10 +11,10 @@ namespace Gelf.Extensions.Logging
         public string Version { get; } = "1.1";
 
         [JsonProperty("host")]
-        public string Host { get; set; }
+        public string? Host { get; set; }
 
         [JsonProperty("short_message")]
-        public string ShortMessage { get; set; }
+        public string? ShortMessage { get; set; }
 
         [JsonProperty("timestamp")]
         public double Timestamp { get; set; }
@@ -22,18 +23,19 @@ namespace Gelf.Extensions.Logging
         public SyslogSeverity Level { get; set; }
 
         [JsonProperty("_logger")]
-        public string Logger { get; set; }
+        public string? Logger { get; set; }
 
         [JsonProperty("_exception")]
-        public string Exception { get; set; }
+        public string? Exception { get; set; }
 
         [JsonProperty("_event_id")]
         public int EventId { get; set; }
 
         [JsonProperty("_event_name")]
-        public string EventName { get; set; }
+        public string? EventName { get; set; }
 
         [JsonIgnore]
-        public IReadOnlyCollection<KeyValuePair<string, object>> AdditionalFields { get; set; }
+        public IReadOnlyCollection<KeyValuePair<string, object>> AdditionalFields { get; set; } =
+            Array.Empty<KeyValuePair<string, object>>();
     }
 }

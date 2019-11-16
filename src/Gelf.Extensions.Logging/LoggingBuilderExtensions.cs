@@ -1,6 +1,4 @@
-﻿#if NETSTANDARD2_0
-
-using System;
+﻿using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
@@ -45,5 +43,3 @@ namespace Gelf.Extensions.Logging
         }
     }
 }
-
-#endif
