@@ -18,7 +18,7 @@ namespace Gelf.Extensions.Logging
         /// <summary>
         /// GELF server host.
         /// </summary>
-        public string Host { get; set; }
+        public string? Host { get; set; }
 
         /// <summary>
         /// GELF server port.
@@ -28,7 +28,7 @@ namespace Gelf.Extensions.Logging
         /// <summary>
         /// Log source name mapped to the GELF host field (required).
         /// </summary>
-        public string LogSource { get; set; }
+        public string? LogSource { get; set; }
 
         /// <summary>
         /// Enable GZip message compression for UDP logging.

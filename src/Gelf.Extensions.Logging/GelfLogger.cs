@@ -64,34 +64,31 @@ namespace Gelf.Extensions.Logging
             return logLevel != LogLevel.None;
         }
 
-        private static IDisposable BeginValueTupleScope<T>((string Item1, T item2) item)
-        {
-            return GelfLogScope.Push(new[]
-            {
-                new KeyValuePair<string, object>(item.Item1, item.Item2)
-            });
-        }
-
         public IDisposable BeginScope<TState>(TState state)
         {
             return state switch
             {
-                IEnumerable<KeyValuePair<string, object>> additionalFields => GelfLogScope.Push(additionalFields),
-                ValueTuple<string, string> item => BeginValueTupleScope(item),
-                ValueTuple<string, sbyte> item => BeginValueTupleScope(item),
-                ValueTuple<string, byte> item => BeginValueTupleScope(item),
-                ValueTuple<string, short> item => BeginValueTupleScope(item),
-                ValueTuple<string, ushort> item => BeginValueTupleScope(item),
-                ValueTuple<string, int> item => BeginValueTupleScope(item),
-                ValueTuple<string, uint> item => BeginValueTupleScope(item),
-                ValueTuple<string, long> item => BeginValueTupleScope(item),
-                ValueTuple<string, ulong> item => BeginValueTupleScope(item),
-                ValueTuple<string, float> item => BeginValueTupleScope(item),
-                ValueTuple<string, double> item => BeginValueTupleScope(item),
-                ValueTuple<string, decimal> item => BeginValueTupleScope(item),
-                ValueTuple<string, object> item => BeginValueTupleScope(item),
+                IEnumerable<KeyValuePair<string, object>> fields => GelfLogScope.Push(fields),
+                ValueTuple<string, string> field => BeginValueTupleScope(field),
+                ValueTuple<string, sbyte> field => BeginValueTupleScope(field),
+                ValueTuple<string, byte> field => BeginValueTupleScope(field),
+                ValueTuple<string, short> field => BeginValueTupleScope(field),
+                ValueTuple<string, ushort> field => BeginValueTupleScope(field),
+                ValueTuple<string, int> field => BeginValueTupleScope(field),
+                ValueTuple<string, uint> field => BeginValueTupleScope(field),
+                ValueTuple<string, long> field => BeginValueTupleScope(field),
+                ValueTuple<string, ulong> field => BeginValueTupleScope(field),
+                ValueTuple<string, float> field => BeginValueTupleScope(field),
+                ValueTuple<string, double> field => BeginValueTupleScope(field),
+                ValueTuple<string, decimal> field => BeginValueTupleScope(field),
+                ValueTuple<string, object> field => BeginValueTupleScope(field),
                 _ => new NoopDisposable()
             };
+
+            static IDisposable BeginValueTupleScope((string, object) field) => GelfLogScope.Push(new[]
+            {
+                new KeyValuePair<string, object>(field.Item1, field.Item2)
+            });
         }
 
         private static IEnumerable<KeyValuePair<string, object>> GetStateAdditionalFields<TState>(TState state)

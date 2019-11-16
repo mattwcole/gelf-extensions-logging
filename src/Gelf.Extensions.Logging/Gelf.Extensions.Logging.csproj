@@ -4,7 +4,7 @@
     <VersionPrefix>0.1.0</VersionPrefix>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <LangVersion>latest</LangVersion>
-    <Nullable>disable</Nullable>
+    <Nullable>enable</Nullable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <Title>Gelf.Extensions.Logging</Title>
     <Authors>Matt Cole</Authors>
@@ -19,6 +19,7 @@
 
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <DocumentationFile>Gelf.Extensions.Logging.xml</DocumentationFile>
+    <NoWarn>1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

@@ -11,13 +11,13 @@ namespace Gelf.Extensions.Logging
             AdditionalFields = additionalFields;
         }
 
-        public GelfLogScope Parent { get; private set; }
+        public GelfLogScope? Parent { get; private set; }
 
         public IEnumerable<KeyValuePair<string, object>> AdditionalFields { get; }
 
-        private static readonly AsyncLocal<GelfLogScope> Value = new AsyncLocal<GelfLogScope>();
+        private static readonly AsyncLocal<GelfLogScope?> Value = new AsyncLocal<GelfLogScope?>();
 
-        public static GelfLogScope Current
+        public static GelfLogScope? Current
         {
             get => Value.Value;
             set => Value.Value = value;
@@ -35,7 +35,7 @@ namespace Gelf.Extensions.Logging
         {
             public void Dispose()
             {
-                Current = Current.Parent;
+                Current = Current?.Parent;
             }
         }
     }

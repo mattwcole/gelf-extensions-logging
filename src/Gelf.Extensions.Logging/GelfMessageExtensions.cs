@@ -5,7 +5,7 @@ namespace Gelf.Extensions.Logging
 {
     public static class GelfMessageExtensions
     {
-        private static bool IsNumeric(object value)
+        private static bool IsNumeric(object? value)
         {
             return value is sbyte
                 || value is byte
