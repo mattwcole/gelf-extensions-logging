@@ -20,7 +20,7 @@ namespace Gelf.Extensions.Logging
             jsonWriter.WriteNumber("level", (int) message.Level);
             jsonWriter.WriteStringUnlessNull("_logger", message.Logger);
             jsonWriter.WriteStringUnlessNull("_exception", message.Exception);
-            jsonWriter.WriteNumber("_event_id", message.EventId);
+            jsonWriter.WriteNumberUnlessNull("_event_id", message.EventId);
             jsonWriter.WriteStringUnlessNull("_event_name", message.EventName);
 
             foreach (var field in message.AdditionalFields)
@@ -86,6 +86,14 @@ namespace Gelf.Extensions.Logging
             if (value != null)
             {
                 jsonWriter.WriteString(propertyName, value);
+            }
+        }
+
+        private static void WriteNumberUnlessNull(this Utf8JsonWriter jsonWriter, string propertyName, int? value)
+        {
+            if (value != null)
+            {
+                jsonWriter.WriteNumber(propertyName, value.Value);
             }
         }
     }

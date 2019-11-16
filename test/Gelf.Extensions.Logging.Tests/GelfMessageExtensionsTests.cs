@@ -17,7 +17,7 @@ namespace Gelf.Extensions.Logging.Tests
 
             var messageJson = message.ToJson();
 
-            Assert.Contains("event_id", messageJson);
+            Assert.Contains("version", messageJson);
             Assert.DoesNotContain("Emergency", messageJson);
             Assert.DoesNotContain(Environment.NewLine, messageJson);
             Assert.DoesNotContain("null", messageJson);

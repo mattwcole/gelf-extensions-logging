@@ -51,10 +51,14 @@ namespace Gelf.Extensions.Logging
                 Timestamp = GetTimestamp(),
                 Logger = _name,
                 Exception = exception?.ToString(),
-                EventId = eventId.Id,
-                EventName = eventId.Name,
                 AdditionalFields = ValidateAdditionalFields(additionalFields).ToArray()
             };
+
+            if (eventId != default)
+            {
+                message.EventId = eventId.Id;
+                message.EventName = eventId.Name;
+            }
 
             _messageProcessor.SendMessage(message);
         }

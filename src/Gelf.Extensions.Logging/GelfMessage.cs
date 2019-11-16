@@ -20,7 +20,7 @@ namespace Gelf.Extensions.Logging
 
         public string? Exception { get; set; }
 
-        public int EventId { get; set; }
+        public int? EventId { get; set; }
 
         public string? EventName { get; set; }
 
