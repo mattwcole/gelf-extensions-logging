@@ -45,6 +45,7 @@ namespace Gelf.Extensions.Logging.Tests
             Assert.Equal(typeof(GelfLoggerTests).FullName, message.logger);
             Assert.Throws<RuntimeBinderException>(() => message.exception);
             Assert.Throws<RuntimeBinderException>(() => message.message_template);
+            Assert.Throws<RuntimeBinderException>(() => message.event_id);
         }
 
         [Fact]
