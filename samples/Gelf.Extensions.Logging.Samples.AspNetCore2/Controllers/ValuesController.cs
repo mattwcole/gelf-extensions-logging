@@ -5,27 +5,44 @@ using Microsoft.Extensions.Logging;
 namespace Gelf.Extensions.Logging.Samples.AspNetCore2.Controllers
 {
     [Route("api/[controller]")]
-    public class ValuesController : Controller
+    [ApiController]
+    public class ValuesController : ControllerBase
     {
         private readonly ILogger<ValuesController> _logger;
 
         public ValuesController(ILogger<ValuesController> logger)
         {
             _logger = logger;
-            _logger.LogDebug("Values controller initialising");
         }
 
         [HttpGet]
-        public IEnumerable<string> Get()
+        public ActionResult<IEnumerable<string>> Get()
         {
-            using (_logger.BeginScope(("scope_field", "foo")))
-            {
-                var result = new[] {"bar", "baz"};
+            var values = new[] { "value1", "value2" };
+            _logger.LogDebug("Getting {values_count} values", values.Length);
+            return values;
+        }
 
-                _logger.LogTrace("Returning {value1} and {value2} from controller", result[0], result[1]);
+        [HttpGet("{id}")]
+        public ActionResult<string> Get(int id)
+        {
+            _logger.LogInformation($"Getting value with ID: {id}");
+            return "value";
+        }
 
-                return result;
-            }
+        [HttpPost]
+        public void Post([FromBody] string value)
+        {
+        }
+
+        [HttpPut("{id}")]
+        public void Put(int id, [FromBody] string value)
+        {
+        }
+
+        [HttpDelete("{id}")]
+        public void Delete(int id)
+        {
         }
     }
 }
