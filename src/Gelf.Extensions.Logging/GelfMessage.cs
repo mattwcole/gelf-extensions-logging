@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Gelf.Extensions.Logging
 {
-    // http://docs.graylog.org/en/2.4/pages/gelf.html#gelf-payload-specification
+    // https://docs.graylog.org/en/3.1/pages/gelf.html#gelf-payload-specification
     public class GelfMessage
     {
         public string Version { get; } = "1.1";
