@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using Xunit;
 
 namespace Gelf.Extensions.Logging.Tests
@@ -11,14 +9,6 @@ namespace Gelf.Extensions.Logging.Tests
         [Fact]
         public void Serialises_to_JSON_string_with_correct_settings()
         {
-            JsonConvert.DefaultSettings = () => new JsonSerializerSettings
-            {
-                Converters =
-                {
-                    new StringEnumConverter()
-                }
-            };
-
             var message = new GelfMessage
             {
                 Level = SyslogSeverity.Emergency,
@@ -27,6 +17,7 @@ namespace Gelf.Extensions.Logging.Tests
 
             var messageJson = message.ToJson();
 
+            Assert.Contains("event_id", messageJson);
             Assert.DoesNotContain("Emergency", messageJson);
             Assert.DoesNotContain(Environment.NewLine, messageJson);
             Assert.DoesNotContain("null", messageJson);
