@@ -69,7 +69,7 @@ Global fields can be added to all logs by setting them in `GelfLoggerOptions.Add
 
 #### Scoped Fields
 
-Log scopes can also be used to attach fields to a group of related logs. Create a log scope with a [`ValueTuple<string, string>`](https://blogs.msdn.microsoft.com/dotnet/2017/03/09/new-features-in-c-7-0/), `ValueTuple<string, int/double/decimal>` (or any other numeric value) or `Dictionary<string, object>` to do so. _Note that any other types passed to `BeginScope()` will be ignored, including `Dictionary<string, string>`._
+[Log scopes](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/logging/?view=aspnetcore-3.0#log-scopes) can also be used to attach fields to a group of related logs. Create a log scope with a [`ValueTuple<string, string>`](https://blogs.msdn.microsoft.com/dotnet/2017/03/09/new-features-in-c-7-0/), `ValueTuple<string, int/double/decimal>` (or any other numeric value) or `Dictionary<string, object>` to do so. _Note that any other types passed to `BeginScope()` will be ignored, including `Dictionary<string, string>`._
 
 ```csharp
 using (_logger.BeginScope(("correlation_id", correlationId)))
@@ -111,7 +111,7 @@ The [Logstash GELF plugin](https://www.elastic.co/guide/en/logstash/current/plug
 
 ### Testing
 
-This repository contains a Docker Compose file that can be used for creating local a Graylog stack using the [Graylog Docker image](https://hub.docker.com/r/graylog/graylog/). This can be useful for testing application logs locally. Requires [Docker](https://www.docker.com/get-docker) and Docker Compose.
+This repository contains a Docker Compose file that can be used for creating a local Graylog stack using the [Graylog Docker image](https://hub.docker.com/r/graylog/graylog/). This can be useful for testing application logs locally. Requires [Docker](https://www.docker.com/get-docker) and Docker Compose.
 
 - `docker-compose up`
 - Navigate to [http://localhost:9000](http://localhost:9000)
