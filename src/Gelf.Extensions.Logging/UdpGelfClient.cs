@@ -24,7 +24,7 @@ namespace Gelf.Extensions.Logging
         public UdpGelfClient(GelfLoggerOptions options)
         {
             _options = options;
-            _udpClient = new UdpClient();
+            _udpClient = new UdpClient(_options.Host, _options.Port);
             _random = new Random();
         }
 
@@ -39,7 +39,7 @@ namespace Gelf.Extensions.Logging
 
             foreach (var messageChunk in ChunkMessage(messageBytes))
             {
-                await _udpClient.SendAsync(messageChunk, messageChunk.Length, _options.Host, _options.Port);
+                await _udpClient.SendAsync(messageChunk, messageChunk.Length);
             }
         }
 
