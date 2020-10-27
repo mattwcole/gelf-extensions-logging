@@ -10,6 +10,7 @@ namespace Gelf.Extensions.Logging
     public class GelfLogger : ILogger
     {
         private static readonly Regex AdditionalFieldKeyRegex = new Regex(@"^[\w\.\-]*$", RegexOptions.Compiled);
+
         private static readonly HashSet<string> ReservedAdditionalFieldKeys = new HashSet<string>
         {
             "id",
@@ -20,8 +21,9 @@ namespace Gelf.Extensions.Logging
             "message_template"
         };
 
-        private readonly string _name;
         private readonly GelfMessageProcessor _messageProcessor;
+
+        private readonly string _name;
         private readonly GelfLoggerOptions _options;
 
         public GelfLogger(string name, GelfMessageProcessor messageProcessor, GelfLoggerOptions options)
@@ -53,6 +55,16 @@ namespace Gelf.Extensions.Logging
                 Exception = exception?.ToString(),
                 AdditionalFields = ValidateAdditionalFields(additionalFields).ToArray()
             };
+
+            if (_options.AdditionalFunctionFields.Count > 0)
+            {
+                additionalFields = _options.AdditionalFields
+                    .Concat(GetScopeAdditionalFields())
+                    .Concat(GetStateAdditionalFields(state))
+                    .Concat(GetEvaluatedAdditionalFunctionFields(message));
+
+                message.AdditionalFields = ValidateAdditionalFields(additionalFields).ToArray();
+            }
 
             if (eventId != default)
             {
@@ -89,10 +101,13 @@ namespace Gelf.Extensions.Logging
                 _ => new NoopDisposable()
             };
 
-            static IDisposable BeginValueTupleScope((string, object) field) => GelfLogScope.Push(new[]
+            static IDisposable BeginValueTupleScope((string, object) field)
             {
-                new KeyValuePair<string, object>(field.Item1, field.Item2)
-            });
+                return GelfLogScope.Push(new[]
+                {
+                    new KeyValuePair<string, object>(field.Item1, field.Item2)
+                });
+            }
         }
 
         private static IEnumerable<KeyValuePair<string, object>> GetStateAdditionalFields<TState>(TState state)
@@ -119,6 +134,11 @@ namespace Gelf.Extensions.Logging
             }
 
             return additionalFields.Reverse();
+        }
+
+        private IEnumerable<KeyValuePair<string, object>> GetEvaluatedAdditionalFunctionFields(GelfMessage message)
+        {
+            return _options.AdditionalFunctionFields.Select(x => new KeyValuePair<string, object>(x.Key, x.Value(message)));
         }
 
         private IEnumerable<KeyValuePair<string, object>> ValidateAdditionalFields(

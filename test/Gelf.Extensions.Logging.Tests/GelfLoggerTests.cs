@@ -11,15 +11,20 @@ namespace Gelf.Extensions.Logging.Tests
 {
     public abstract class GelfLoggerTests : IDisposable
     {
+        protected readonly Faker Faker;
         protected readonly GraylogFixture GraylogFixture;
         protected readonly LoggerFixture LoggerFixture;
-        protected readonly Faker Faker;
 
         protected GelfLoggerTests(GraylogFixture graylogFixture, LoggerFixture loggerFixture)
         {
             GraylogFixture = graylogFixture;
             LoggerFixture = loggerFixture;
             Faker = new Faker();
+        }
+
+        public void Dispose()
+        {
+            LoggerFixture.Dispose();
         }
 
         [Theory]
@@ -231,9 +236,26 @@ namespace Gelf.Extensions.Logging.Tests
             Assert.Equal("BAR", message.bar);
         }
 
-        public void Dispose()
+        [Fact]
+        public async Task Eval_additional_function_fields_and_sends_them()
         {
-            LoggerFixture.Dispose();
+            var options = LoggerFixture.LoggerOptions;
+            options.AdditionalFunctionFields.Add("loglevel", message => message.Level.ToString());
+            options.AdditionalFunctionFields.Add("exceptiontype", message => message.Exception?.Split(':')[0]);
+
+            using var loggerFactory = LoggerFixture.CreateLoggerFactory(options);
+            var messageText = Faker.Lorem.Sentence();
+            var exception = new Exception("Something went wrong!");
+            var sut = loggerFactory.CreateLogger(nameof(GelfLoggerTests));
+
+            sut.LogError(exception, messageText);
+
+            var message = await GraylogFixture.WaitForMessageAsync();
+
+            Assert.Equal(messageText, message.message);
+            Assert.Equal(exception.ToString(), message.exception);
+            Assert.Equal("Error", message.loglevel);
+            Assert.Equal("System.Exception", message.exceptiontype);
         }
     }
 }

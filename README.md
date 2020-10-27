@@ -97,6 +97,25 @@ _logger.LogInformation("Order {order_id} took {order_time} seconds to process", 
 
 Here the message will contain `order_id` and `order_time` fields.
 
+#### Global Functional Fields
+
+Global functional fields can be added to all logs by setting them in `GelfLoggerOptions.AdditionalFunctionFields`. This can be useful when additional processing needed over log message. You can register functions on initial configuration by adding them into `Dictionary<string, Func<GelfMessage, object>>`.
+
+```csharp
+public static IHostBuilder CreateHostBuilder(string[] args) => Host
+    .CreateDefaultBuilder(args)
+    .ConfigureWebHostDefaults(webBuilder =>
+    {
+        webBuilder
+            .UseStartup<Startup>()
+            .ConfigureLogging((context, builder) => builder.AddGelf(options =>
+            {
+                options.AdditionalFunctionFields.Add("loglevel", message => message.Level.ToString());
+                options.AdditionalFunctionFields.Add("exceptiontype", message => message.Exception?.Split(':')[0]);
+            }));
+    });
+```
+
 ### Log Filtering
 
 The "GELF" provider can be filtered in the same way as the default providers (details [here](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/logging/?view=aspnetcore-3.0#log-filtering)).
