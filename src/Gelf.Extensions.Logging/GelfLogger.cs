@@ -59,9 +59,9 @@ namespace Gelf.Extensions.Logging
             if (_options.AdditionalFunctionFields.Count > 0)
             {
                 additionalFields = _options.AdditionalFields
+                    .Concat(GetEvaluatedAdditionalFunctionFields(message))
                     .Concat(GetScopeAdditionalFields())
-                    .Concat(GetStateAdditionalFields(state))
-                    .Concat(GetEvaluatedAdditionalFunctionFields(message));
+                    .Concat(GetStateAdditionalFields(state));
 
                 message.AdditionalFields = ValidateAdditionalFields(additionalFields).ToArray();
             }

@@ -257,5 +257,28 @@ namespace Gelf.Extensions.Logging.Tests
             Assert.Equal("Error", message.loglevel);
             Assert.Equal("System.Exception", message.exceptiontype);
         }
+
+        [Fact]
+        public async Task Uses_scope_fields_when_keys_duplicated_with_additional_function_fields_value()
+        {
+            var options = LoggerFixture.LoggerOptions;
+            options.AdditionalFunctionFields.Add("loglevel", message => message.Level.ToString());
+            options.AdditionalFunctionFields.Add("exceptiontype", message => message.Exception?.Split(':')[0]);
+
+            using var loggerFactory = LoggerFixture.CreateLoggerFactory(options);
+            var messageText = Faker.Lorem.Sentence();
+            var sut = loggerFactory.CreateLogger(nameof(GelfLoggerTests));
+
+            using (sut.BeginScope(("exceptiontype", "new-value")))
+            {
+                sut.LogInformation(messageText);
+            }
+
+            var message = await GraylogFixture.WaitForMessageAsync();
+
+            Assert.Equal(messageText, message.message);
+            Assert.Equal("Informational", message.loglevel);
+            Assert.Equal("new-value", message.exceptiontype);
+        }
     }
 }
