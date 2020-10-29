@@ -41,10 +41,6 @@ namespace Gelf.Extensions.Logging
                 return;
             }
 
-            var additionalFields = _options.AdditionalFields
-                .Concat(GetScopeAdditionalFields())
-                .Concat(GetStateAdditionalFields(state));
-
             var message = new GelfMessage
             {
                 ShortMessage = formatter(state, exception),
@@ -53,18 +49,15 @@ namespace Gelf.Extensions.Logging
                 Timestamp = GetTimestamp(),
                 Logger = _name,
                 Exception = exception?.ToString(),
-                AdditionalFields = ValidateAdditionalFields(additionalFields).ToArray()
+                OriginalData = new OriginalData(logLevel, eventId, exception)
             };
 
-            if (_options.AdditionalFunctionFields.Count > 0)
-            {
-                additionalFields = _options.AdditionalFields
-                    .Concat(GetEvaluatedAdditionalFunctionFields(message))
-                    .Concat(GetScopeAdditionalFields())
-                    .Concat(GetStateAdditionalFields(state));
+            var additionalFields = _options.AdditionalFields
+                .Concat(GetComputedAdditionalFieldsFromAdditionalFieldsFactory(message.OriginalData))
+                .Concat(GetScopeAdditionalFields())
+                .Concat(GetStateAdditionalFields(state));
 
-                message.AdditionalFields = ValidateAdditionalFields(additionalFields).ToArray();
-            }
+            message.AdditionalFields = ValidateAdditionalFields(additionalFields).ToArray();
 
             if (eventId != default)
             {
@@ -136,9 +129,10 @@ namespace Gelf.Extensions.Logging
             return additionalFields.Reverse();
         }
 
-        private IEnumerable<KeyValuePair<string, object>> GetEvaluatedAdditionalFunctionFields(GelfMessage message)
+        private IEnumerable<KeyValuePair<string, object>> GetComputedAdditionalFieldsFromAdditionalFieldsFactory(OriginalData originalData)
         {
-            return _options.AdditionalFunctionFields.Select(x => new KeyValuePair<string, object>(x.Key, x.Value(message)));
+            return _options.AdditionalFieldsFactory.Invoke(originalData.LogLevel, originalData.EventId, originalData.Exception) ??
+                   Enumerable.Empty<KeyValuePair<string, object>>();
         }
 
         private IEnumerable<KeyValuePair<string, object>> ValidateAdditionalFields(

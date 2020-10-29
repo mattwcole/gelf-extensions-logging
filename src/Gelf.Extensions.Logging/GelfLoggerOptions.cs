@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 
 namespace Gelf.Extensions.Logging
 {
@@ -46,9 +47,10 @@ namespace Gelf.Extensions.Logging
         public Dictionary<string, object> AdditionalFields { get; set; } = new Dictionary<string, object>();
 
         /// <summary>
-        ///     Additional function fields that will be evaluated base on some other log message info and attached to all log messages.
+        ///     Compute additional fields based on raw log data.
         /// </summary>
-        public Dictionary<string, Func<GelfMessage, object>> AdditionalFunctionFields { get; set; } = new Dictionary<string, Func<GelfMessage, object>>();
+        public Func<LogLevel, EventId?, Exception?, Dictionary<string, object>?> AdditionalFieldsFactory { get; set; } =
+            (loglevel, eventId, exception) => new Dictionary<string, object>();
 
         /// <summary>
         ///     Headers used when sending logs via HTTP(S).

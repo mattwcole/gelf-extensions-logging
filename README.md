@@ -97,9 +97,9 @@ _logger.LogInformation("Order {order_id} took {order_time} seconds to process", 
 
 Here the message will contain `order_id` and `order_time` fields.
 
-#### Global Functional Fields
+#### Additional Fields Factory
 
-Global functional fields can be added to all logs by setting them in `GelfLoggerOptions.AdditionalFunctionFields`. This can be useful when additional processing needed over log message. You can register functions on initial configuration by adding them into `Dictionary<string, Func<GelfMessage, object>>`.
+Global additional fields factory, `Func<LogLevel, EventId?, Exception?, Dictionary<string, object>?>`, can be set in `GelfLoggerOptions.AdditionalFieldsFactory`. This can be useful when additional fields value need to be calculated by original log message details like `LogLevel`, `EventId` or `Exception`.
 
 ```csharp
 public static IHostBuilder CreateHostBuilder(string[] args) => Host
@@ -110,8 +110,13 @@ public static IHostBuilder CreateHostBuilder(string[] args) => Host
             .UseStartup<Startup>()
             .ConfigureLogging((context, builder) => builder.AddGelf(options =>
             {
-                options.AdditionalFunctionFields.Add("loglevel", message => message.Level.ToString());
-                options.AdditionalFunctionFields.Add("exceptiontype", message => message.Exception?.Split(':')[0]);
+                options.AdditionalFieldsFactory = (originalLogLevel, originalEvent, originalException) =>
+                    new Dictionary<string, object>
+                    {
+                        {"log_level", originalLogLevel.ToString()},
+                        {"exception_type", originalException?.GetType().ToString()},
+                        {"custom_event_name", originalEvent?.Name}
+                    };
             }));
     });
 ```
