@@ -48,12 +48,11 @@ namespace Gelf.Extensions.Logging
                 Level = GetLevel(logLevel),
                 Timestamp = GetTimestamp(),
                 Logger = _name,
-                Exception = exception?.ToString(),
-                OriginalData = new OriginalData(logLevel, eventId, exception)
+                Exception = exception?.ToString()
             };
 
             var additionalFields = _options.AdditionalFields
-                .Concat(GetComputedAdditionalFieldsFromAdditionalFieldsFactory(message.OriginalData))
+                .Concat(GetComputedAdditionalFieldsFromAdditionalFieldsFactory(logLevel, eventId, exception))
                 .Concat(GetScopeAdditionalFields())
                 .Concat(GetStateAdditionalFields(state));
 
@@ -129,9 +128,9 @@ namespace Gelf.Extensions.Logging
             return additionalFields.Reverse();
         }
 
-        private IEnumerable<KeyValuePair<string, object>> GetComputedAdditionalFieldsFromAdditionalFieldsFactory(OriginalData originalData)
+        private IEnumerable<KeyValuePair<string, object>> GetComputedAdditionalFieldsFromAdditionalFieldsFactory(LogLevel logLevel, EventId eventId, Exception? exception)
         {
-            return _options.AdditionalFieldsFactory.Invoke(originalData.LogLevel, originalData.EventId, originalData.Exception) ??
+            return _options.AdditionalFieldsFactory.Invoke(logLevel, eventId, exception) ??
                    Enumerable.Empty<KeyValuePair<string, object>>();
         }
 

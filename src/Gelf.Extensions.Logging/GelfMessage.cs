@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Microsoft.Extensions.Logging;
 
 namespace Gelf.Extensions.Logging
 {
@@ -25,25 +24,7 @@ namespace Gelf.Extensions.Logging
 
         public string? EventName { get; set; }
 
-        public OriginalData? OriginalData { get; set; }
-
         public IReadOnlyCollection<KeyValuePair<string, object>> AdditionalFields { get; set; } =
             Array.Empty<KeyValuePair<string, object>>();
-    }
-
-    public class OriginalData
-    {
-        public OriginalData(LogLevel logLevel, EventId? eventId, Exception? exception)
-        {
-            LogLevel = logLevel;
-            EventId = eventId;
-            Exception = exception;
-        }
-
-        public LogLevel LogLevel { get; }
-
-        public EventId? EventId { get; }
-
-        public Exception? Exception { get; }
     }
 }
