@@ -11,15 +11,20 @@ namespace Gelf.Extensions.Logging.Tests
 {
     public abstract class GelfLoggerTests : IDisposable
     {
+        protected readonly Faker Faker;
         protected readonly GraylogFixture GraylogFixture;
         protected readonly LoggerFixture LoggerFixture;
-        protected readonly Faker Faker;
 
         protected GelfLoggerTests(GraylogFixture graylogFixture, LoggerFixture loggerFixture)
         {
             GraylogFixture = graylogFixture;
             LoggerFixture = loggerFixture;
             Faker = new Faker();
+        }
+
+        public void Dispose()
+        {
+            LoggerFixture.Dispose();
         }
 
         [Theory]
@@ -231,9 +236,33 @@ namespace Gelf.Extensions.Logging.Tests
             Assert.Equal("BAR", message.bar);
         }
 
-        public void Dispose()
+        [Fact]
+        public async Task Uses_additional_fields_factory()
         {
-            LoggerFixture.Dispose();
+            var options = LoggerFixture.LoggerOptions;
+            options.AdditionalFieldsFactory = (originalLogLevel, originalEvent, originalException) =>
+                new Dictionary<string, object>
+                {
+                    {"log_level", originalLogLevel.ToString()},
+                    {"exception_type", originalException?.GetType().ToString()},
+                    {"custom_event_name", originalEvent?.Name}
+                };
+
+            using var loggerFactory = LoggerFixture.CreateLoggerFactory(options);
+            var messageText = Faker.Lorem.Sentence();
+            var exception = new Exception("Something went wrong!");
+            var eventId = new EventId(250, "foo");
+            var sut = loggerFactory.CreateLogger(nameof(GelfLoggerTests));
+
+            sut.LogError(eventId, exception, messageText);
+
+            var message = await GraylogFixture.WaitForMessageAsync();
+
+            Assert.Equal(messageText, message.message);
+            Assert.Equal(exception.ToString(), message.exception);
+            Assert.Equal("Error", message.log_level);
+            Assert.Equal(exception.GetType().ToString(), message.exception_type);
+            Assert.Equal("foo", message.custom_event_name);
         }
     }
 }
