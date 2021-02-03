@@ -68,5 +68,84 @@ namespace Gelf.Extensions.Logging.Tests
             Assert.Equal("graylog-host-2", options.Value.Host);
             Assert.Equal("post-configured-log-source", options.Value.LogSource);
         }
+
+        [Fact]
+        public void Reads_GELF_logger_options_with_default_udpmaxchunksize()
+        {
+            int defaultMaxChunkSize = 8192;
+
+            var configuration = new ConfigurationBuilder().Add(new MemoryConfigurationSource
+            {
+                InitialData = new Dictionary<string, string>
+                {
+                    ["Logging:GELF:IncludeScopes"] = "false",
+                    ["Logging:GELF:Protocol"] = "HTTP",
+                    ["Logging:GELF:Host"] = "graylog-host-1"
+                }
+            }).Build();
+
+            var serviceCollection = new ServiceCollection()
+                .AddLogging(loggingBuilder => loggingBuilder
+                    .AddConfiguration(configuration.GetSection("Logging"))
+                    .AddGelf());
+
+            using var provider = serviceCollection.BuildServiceProvider();
+            var options = provider.GetRequiredService<IOptions<GelfLoggerOptions>>();
+            
+            Assert.Equal(options.Value.UdpMaxChunkSize, defaultMaxChunkSize);
+        }
+
+        [Fact]
+        public void Reads_GELF_logger_options_with_custom_udpmaxchunksize()
+        {
+            int customChunkSize = 1024;
+
+            var configuration = new ConfigurationBuilder().Add(new MemoryConfigurationSource
+            {
+                InitialData = new Dictionary<string, string>
+                {
+                    ["Logging:GELF:IncludeScopes"] = "false",
+                    ["Logging:GELF:Protocol"] = "HTTP",
+                    ["Logging:GELF:Host"] = "graylog-host-1",
+                    ["Logging:GELF:UdpMaxChunkSize"] = customChunkSize.ToString()
+                }
+            }).Build();
+
+            var serviceCollection = new ServiceCollection()
+                .AddLogging(loggingBuilder => loggingBuilder
+                    .AddConfiguration(configuration.GetSection("Logging"))
+                    .AddGelf());
+
+            using var provider = serviceCollection.BuildServiceProvider();
+            var options = provider.GetRequiredService<IOptions<GelfLoggerOptions>>();
+
+            Assert.Equal(options.Value.UdpMaxChunkSize, customChunkSize);
+        }
+
+        [Fact]
+        public void Reads_GELF_logger_options_with_custom_udpmaxchunksize_post_configuration()
+        {
+            int customChunkSize = 1024;
+
+            var configuration = new ConfigurationBuilder().Add(new MemoryConfigurationSource
+            {
+                InitialData = new Dictionary<string, string>
+                {
+                    ["Logging:GELF:IncludeScopes"] = "false",
+                    ["Logging:GELF:Protocol"] = "HTTP",
+                    ["Logging:GELF:Host"] = "graylog-host-1"
+                }
+            }).Build();
+
+            var serviceCollection = new ServiceCollection()
+                .AddLogging(loggingBuilder => loggingBuilder
+                    .AddConfiguration(configuration.GetSection("Logging"))
+                    .AddGelf(o=>o.UdpMaxChunkSize = customChunkSize));
+
+            using var provider = serviceCollection.BuildServiceProvider();
+            var options = provider.GetRequiredService<IOptions<GelfLoggerOptions>>();
+
+            Assert.Equal(options.Value.UdpMaxChunkSize, customChunkSize);
+        }
     }
 }
