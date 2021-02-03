@@ -12,10 +12,10 @@ namespace Gelf.Extensions.Logging
     public class UdpGelfClient : IGelfClient
     {
         private const int MaxChunks = 128;
-        private const int MaxChunkSize = 8192;
         private const int MessageHeaderSize = 12;
         private const int MessageIdSize = 8;
-        private const int MaxMessageBodySize = MaxChunkSize - MessageHeaderSize;
+
+        private readonly int _maxMessageBodySize;
 
         private readonly UdpClient _udpClient;
         private readonly GelfLoggerOptions _options;
@@ -24,6 +24,7 @@ namespace Gelf.Extensions.Logging
         public UdpGelfClient(GelfLoggerOptions options)
         {
             _options = options;
+            _maxMessageBodySize = options.UdpMaxChunkSize - MessageHeaderSize;
             _udpClient = new UdpClient(_options.Host, _options.Port);
             _random = new Random();
         }
@@ -55,13 +56,13 @@ namespace Gelf.Extensions.Logging
 
         private IEnumerable<byte[]> ChunkMessage(byte[] messageBytes)
         {
-            if (messageBytes.Length < MaxChunkSize)
+            if (messageBytes.Length < _options.UdpMaxChunkSize)
             {
                 yield return messageBytes;
                 yield break;
             }
 
-            var sequenceCount = (int) Math.Ceiling(messageBytes.Length / (double) MaxMessageBodySize);
+            var sequenceCount = (int) Math.Ceiling(messageBytes.Length / (double) _maxMessageBodySize);
             if (sequenceCount > MaxChunks)
             {
                 Debug.Fail($"GELF message contains {sequenceCount} chunks, exceeding the maximum of {MaxChunks}.");
@@ -72,8 +73,8 @@ namespace Gelf.Extensions.Logging
             for (var sequenceNumber = 0; sequenceNumber < sequenceCount; sequenceNumber++)
             {
                 var messageHeader = GetMessageHeader(sequenceNumber, sequenceCount, messageId);
-                var chunkStartIndex = sequenceNumber * MaxMessageBodySize;
-                var messageBodySize = Math.Min(messageBytes.Length - chunkStartIndex, MaxMessageBodySize);
+                var chunkStartIndex = sequenceNumber * _maxMessageBodySize;
+                var messageBodySize = Math.Min(messageBytes.Length - chunkStartIndex, _maxMessageBodySize);
                 var chunk = new byte[messageBodySize + MessageHeaderSize];
 
                 Array.Copy(messageHeader, chunk, MessageHeaderSize);
