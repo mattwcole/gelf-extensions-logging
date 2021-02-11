@@ -42,6 +42,11 @@ namespace Gelf.Extensions.Logging
         public int UdpCompressionThreshold { get; set; } = 512;
 
         /// <summary>
+        ///     The UDP message max size in bytes to be sent in one datagram.
+        /// </summary>
+        public int UdpMaxChunkSize { get; set; } = 8192;
+
+        /// <summary>
         ///     Additional fields that will be attached to all log messages.
         /// </summary>
         public Dictionary<string, object> AdditionalFields { get; set; } = new Dictionary<string, object>();
