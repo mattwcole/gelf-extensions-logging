@@ -34,7 +34,7 @@ namespace Gelf.Extensions.Logging
         }
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state,
-            Exception exception, Func<TState, Exception, string> formatter)
+            Exception? exception, Func<TState, Exception?, string> formatter)
         {
             if (!IsEnabled(logLevel))
             {
@@ -52,7 +52,7 @@ namespace Gelf.Extensions.Logging
             };
 
             var additionalFields = _options.AdditionalFields
-                .Concat(GetComputedAdditionalFieldsFromAdditionalFieldsFactory(logLevel, eventId, exception))
+                .Concat(GetFactoryAdditionalFields(logLevel, eventId, exception))
                 .Concat(GetScopeAdditionalFields())
                 .Concat(GetStateAdditionalFields(state));
 
@@ -102,11 +102,11 @@ namespace Gelf.Extensions.Logging
             }
         }
 
-        private static IEnumerable<KeyValuePair<string, object>> GetStateAdditionalFields<TState>(TState state)
+        private IEnumerable<KeyValuePair<string, object>> GetFactoryAdditionalFields(
+            LogLevel logLevel, EventId eventId, Exception? exception)
         {
-            return state is IEnumerable<KeyValuePair<string, object>> logValues
-                ? logValues
-                : Enumerable.Empty<KeyValuePair<string, object>>();
+            return _options.AdditionalFieldsFactory?.Invoke(logLevel, eventId, exception) ??
+                   Enumerable.Empty<KeyValuePair<string, object>>();
         }
 
         private IEnumerable<KeyValuePair<string, object>> GetScopeAdditionalFields()
@@ -128,11 +128,11 @@ namespace Gelf.Extensions.Logging
             return additionalFields.Reverse();
         }
 
-        private IEnumerable<KeyValuePair<string, object>> GetComputedAdditionalFieldsFromAdditionalFieldsFactory(
-            LogLevel logLevel, EventId eventId, Exception? exception)
+        private static IEnumerable<KeyValuePair<string, object>> GetStateAdditionalFields<TState>(TState state)
         {
-            return _options.AdditionalFieldsFactory.Invoke(logLevel, eventId, exception) ??
-                   Enumerable.Empty<KeyValuePair<string, object>>();
+            return state is IEnumerable<KeyValuePair<string, object>> logValues
+                ? logValues
+                : Enumerable.Empty<KeyValuePair<string, object>>();
         }
 
         private IEnumerable<KeyValuePair<string, object>> ValidateAdditionalFields(

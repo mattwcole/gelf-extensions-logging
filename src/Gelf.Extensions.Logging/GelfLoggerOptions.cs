@@ -52,10 +52,9 @@ namespace Gelf.Extensions.Logging
         public Dictionary<string, object> AdditionalFields { get; set; } = new();
 
         /// <summary>
-        ///     Compute additional fields based on raw log data.
+        ///     Additional fields computed based on raw log data.
         /// </summary>
-        public Func<LogLevel, EventId?, Exception?, Dictionary<string, object>?> AdditionalFieldsFactory { get; set; } =
-            (loglevel, eventId, exception) => new Dictionary<string, object>();
+        public Func<LogLevel, EventId, Exception?, Dictionary<string, object>>? AdditionalFieldsFactory { get; set; }
 
         /// <summary>
         ///     Headers used when sending logs via HTTP(S).
