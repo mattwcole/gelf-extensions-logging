@@ -4,7 +4,7 @@ namespace Gelf.Extensions.Logging.Tests.Fixtures
 {
     public static class TestContext
     {
-        private static readonly AsyncLocal<string> LocalTestId = new AsyncLocal<string>();
+        private static readonly AsyncLocal<string> LocalTestId = new();
 
         public static string TestId
         {

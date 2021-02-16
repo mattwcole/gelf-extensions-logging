@@ -11,7 +11,7 @@ namespace Gelf.Extensions.Logging.Tests
                 Host = GraylogFixture.Host,
                 Port = graylogFixture.InputPort,
                 Protocol = GelfProtocol.Http,
-                LogSource = typeof(HttpGelfLoggerTests).Name
+                LogSource = nameof(HttpGelfLoggerTests)
             }))
         {
         }

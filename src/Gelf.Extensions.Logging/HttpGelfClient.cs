@@ -8,7 +8,7 @@ namespace Gelf.Extensions.Logging
     public class HttpGelfClient : IGelfClient
     {
         private readonly HttpClient _httpClient;
-        
+
         public HttpGelfClient(GelfLoggerOptions options)
         {
             var uriBuilder = new UriBuilder
@@ -24,12 +24,9 @@ namespace Gelf.Extensions.Logging
                 Timeout = options.HttpTimeout
             };
 
-            if (options.HttpHeaders != null)
+            foreach (var header in options.HttpHeaders)
             {
-                foreach (var header in options.HttpHeaders)
-                {
-                    _httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
-                }
+                _httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
             }
         }
 

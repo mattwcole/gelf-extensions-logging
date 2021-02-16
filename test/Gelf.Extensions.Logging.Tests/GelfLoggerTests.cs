@@ -7,6 +7,9 @@ using Microsoft.CSharp.RuntimeBinder;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
+// ReSharper disable TemplateIsNotCompileTimeConstantProblem
+// ReSharper disable InconsistentLogPropertyNaming
+
 namespace Gelf.Extensions.Logging.Tests
 {
     public abstract class GelfLoggerTests : IDisposable
@@ -39,7 +42,7 @@ namespace Gelf.Extensions.Logging.Tests
             var messageText = Faker.Lorem.Sentence();
             var sut = LoggerFixture.CreateLogger<GelfLoggerTests>();
 
-            sut.Log(logLevel, new EventId(), (object) null, null, (s, e) => messageText);
+            sut.Log(logLevel, new EventId(), (object) null, null, (_, _) => messageText);
 
             var message = await GraylogFixture.WaitForMessageAsync();
 
@@ -237,15 +240,15 @@ namespace Gelf.Extensions.Logging.Tests
         }
 
         [Fact]
-        public async Task Uses_additional_fields_factory()
+        public async Task Sends_message_with_additional_fields_from_factory()
         {
             var options = LoggerFixture.LoggerOptions;
             options.AdditionalFieldsFactory = (originalLogLevel, originalEvent, originalException) =>
                 new Dictionary<string, object>
                 {
-                    {"log_level", originalLogLevel.ToString()},
-                    {"exception_type", originalException?.GetType().ToString()},
-                    {"custom_event_name", originalEvent?.Name}
+                    ["log_level"] = originalLogLevel.ToString(),
+                    ["exception_type"] = originalException?.GetType().ToString(),
+                    ["custom_event_name"] = originalEvent.Name
                 };
 
             using var loggerFactory = LoggerFixture.CreateLoggerFactory(options);
