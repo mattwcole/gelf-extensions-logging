@@ -72,7 +72,7 @@ namespace Gelf.Extensions.Logging.Tests
         [Fact]
         public void Reads_GELF_logger_options_with_default_udpmaxchunksize()
         {
-            int defaultMaxChunkSize = 8192;
+            var defaultMaxChunkSize = 8192;
 
             var configuration = new ConfigurationBuilder().Add(new MemoryConfigurationSource
             {
@@ -91,14 +91,14 @@ namespace Gelf.Extensions.Logging.Tests
 
             using var provider = serviceCollection.BuildServiceProvider();
             var options = provider.GetRequiredService<IOptions<GelfLoggerOptions>>();
-            
+
             Assert.Equal(options.Value.UdpMaxChunkSize, defaultMaxChunkSize);
         }
 
         [Fact]
         public void Reads_GELF_logger_options_with_custom_udpmaxchunksize()
         {
-            int customChunkSize = 1024;
+            var customChunkSize = 1024;
 
             var configuration = new ConfigurationBuilder().Add(new MemoryConfigurationSource
             {
@@ -125,7 +125,7 @@ namespace Gelf.Extensions.Logging.Tests
         [Fact]
         public void Reads_GELF_logger_options_with_custom_udpmaxchunksize_post_configuration()
         {
-            int customChunkSize = 1024;
+            var customChunkSize = 1024;
 
             var configuration = new ConfigurationBuilder().Add(new MemoryConfigurationSource
             {
@@ -140,7 +140,7 @@ namespace Gelf.Extensions.Logging.Tests
             var serviceCollection = new ServiceCollection()
                 .AddLogging(loggingBuilder => loggingBuilder
                     .AddConfiguration(configuration.GetSection("Logging"))
-                    .AddGelf(o=>o.UdpMaxChunkSize = customChunkSize));
+                    .AddGelf(o => o.UdpMaxChunkSize = customChunkSize));
 
             using var provider = serviceCollection.BuildServiceProvider();
             var options = provider.GetRequiredService<IOptions<GelfLoggerOptions>>();

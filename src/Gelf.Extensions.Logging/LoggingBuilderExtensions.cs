@@ -10,7 +10,7 @@ namespace Gelf.Extensions.Logging
     public static class LoggingBuilderExtensions
     {
         /// <summary>
-        /// Registers a <see cref="GelfLoggerProvider"/> with the service collection.
+        ///     Registers a <see cref="GelfLoggerProvider" /> with the service collection.
         /// </summary>
         /// <param name="builder"></param>
         /// <returns></returns>
@@ -24,8 +24,8 @@ namespace Gelf.Extensions.Logging
         }
 
         /// <summary>
-        /// Registers a <see cref="GelfLoggerProvider"/> with the service collection allowing logger options
-        /// to be customised.
+        ///     Registers a <see cref="GelfLoggerProvider" /> with the service collection allowing logger options
+        ///     to be customised.
         /// </summary>
         /// <param name="builder"></param>
         /// <param name="configure"></param>

@@ -8,7 +8,7 @@ namespace Gelf.Extensions.Logging
     public class HttpGelfClient : IGelfClient
     {
         private readonly HttpClient _httpClient;
-        
+
         public HttpGelfClient(GelfLoggerOptions options)
         {
             var uriBuilder = new UriBuilder

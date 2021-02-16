@@ -9,9 +9,9 @@ namespace Gelf.Extensions.Logging
 {
     public class GelfLogger : ILogger
     {
-        private static readonly Regex AdditionalFieldKeyRegex = new Regex(@"^[\w\.\-]*$", RegexOptions.Compiled);
+        private static readonly Regex AdditionalFieldKeyRegex = new(@"^[\w\.\-]*$", RegexOptions.Compiled);
 
-        private static readonly HashSet<string> ReservedAdditionalFieldKeys = new HashSet<string>
+        private static readonly HashSet<string> ReservedAdditionalFieldKeys = new()
         {
             "id",
             "logger",
@@ -128,7 +128,8 @@ namespace Gelf.Extensions.Logging
             return additionalFields.Reverse();
         }
 
-        private IEnumerable<KeyValuePair<string, object>> GetComputedAdditionalFieldsFromAdditionalFieldsFactory(LogLevel logLevel, EventId eventId, Exception? exception)
+        private IEnumerable<KeyValuePair<string, object>> GetComputedAdditionalFieldsFromAdditionalFieldsFactory(
+            LogLevel logLevel, EventId eventId, Exception? exception)
         {
             return _options.AdditionalFieldsFactory.Invoke(logLevel, eventId, exception) ??
                    Enumerable.Empty<KeyValuePair<string, object>>();
