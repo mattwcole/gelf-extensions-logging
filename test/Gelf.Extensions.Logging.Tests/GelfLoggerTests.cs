@@ -7,6 +7,9 @@ using Microsoft.CSharp.RuntimeBinder;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
+// ReSharper disable TemplateIsNotCompileTimeConstantProblem
+// ReSharper disable InconsistentLogPropertyNaming
+
 namespace Gelf.Extensions.Logging.Tests
 {
     public abstract class GelfLoggerTests : IDisposable
@@ -39,7 +42,7 @@ namespace Gelf.Extensions.Logging.Tests
             var messageText = Faker.Lorem.Sentence();
             var sut = LoggerFixture.CreateLogger<GelfLoggerTests>();
 
-            sut.Log(logLevel, new EventId(), (object) null, null, (s, e) => messageText);
+            sut.Log(logLevel, new EventId(), (object) null, null, (_, _) => messageText);
 
             var message = await GraylogFixture.WaitForMessageAsync();
 

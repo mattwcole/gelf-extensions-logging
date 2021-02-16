@@ -3,6 +3,8 @@ using Gelf.Extensions.Logging.Tests.Fixtures;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
+// ReSharper disable TemplateIsNotCompileTimeConstantProblem
+
 namespace Gelf.Extensions.Logging.Tests
 {
     public class UdpGelfLoggerTests : GelfLoggerTests, IClassFixture<UdpGraylogFixture>
@@ -13,7 +15,7 @@ namespace Gelf.Extensions.Logging.Tests
                 Host = GraylogFixture.Host,
                 Port = graylogFixture.InputPort,
                 Protocol = GelfProtocol.Udp,
-                LogSource = typeof(UdpGelfLoggerTests).Name
+                LogSource = nameof(UdpGelfLoggerTests)
             }))
         {
         }
