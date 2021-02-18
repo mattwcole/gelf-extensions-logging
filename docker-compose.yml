@@ -2,9 +2,9 @@ version: "3"
 
 services:
   mongo:
-    image: mongo:3
+    image: mongo:4.2
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.8.2
+    image: docker.elastic.co/elasticsearch/elasticsearch-oss:7.10.0
     environment:
       - http.host=0.0.0.0
       - transport.host=localhost
@@ -15,11 +15,13 @@ services:
         soft: -1
         hard: -1
   graylog:
-    image: graylog/graylog:3.1
+    image: graylog/graylog:4.0
     environment:
       - GRAYLOG_PASSWORD_SECRET="!ux*lAfQVjaRT8iI"
       - GRAYLOG_ROOT_PASSWORD_SHA2=8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918
-      - GRAYLOG_HTTP_EXTERNAL_URI=http://127.0.0.1:9000/
+      - GRAYLOG_HTTP_EXTERNAL_URI=http://localhost:9000/
+    entrypoint: /usr/bin/tini -- wait-for-it elasticsearch:9200 --  /docker-entrypoint.sh
+    restart: always
     depends_on:
       - mongo
       - elasticsearch

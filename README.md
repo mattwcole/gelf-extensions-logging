@@ -1,6 +1,6 @@
-# Gelf.Extensions.Logging [![travis](https://img.shields.io/travis/mattwcole/gelf-extensions-logging.svg?style=flat-square)](https://travis-ci.org/mattwcole/gelf-extensions-logging) [![nuget](https://img.shields.io/nuget/v/Gelf.Extensions.Logging.svg?style=flat-square)](https://www.nuget.org/packages/Gelf.Extensions.Logging) [![license](https://img.shields.io/github/license/mattwcole/gelf-extensions-logging.svg?style=flat-square)](https://github.com/mattwcole/gelf-extensions-logging/blob/master/LICENSE.md)
+# Gelf.Extensions.Logging [![travis](https://img.shields.io/travis/com/mattwcole/gelf-extensions-logging?style=flat-square)](https://www.travis-ci.com/github/mattwcole/gelf-extensions-logging) [![downloads](https://img.shields.io/nuget/dt/Gelf.Extensions.Logging?style=flat-square)](https://www.nuget.org/packages/Gelf.Extensions.Logging) [![nuget](https://img.shields.io/nuget/v/Gelf.Extensions.Logging.svg?style=flat-square)](https://www.nuget.org/packages/Gelf.Extensions.Logging) [![license](https://img.shields.io/github/license/mattwcole/gelf-extensions-logging.svg?style=flat-square)](https://github.com/mattwcole/gelf-extensions-logging/blob/master/LICENSE.md)
 
-[GELF](https://docs.graylog.org/en/3.1/pages/gelf.html) provider for [Microsoft.Extensions.Logging](https://github.com/aspnet/Extensions/tree/master/src/Logging) for sending logs to [Graylog](https://www.graylog.org/), [Logstash](https://www.elastic.co/products/logstash) and more from .NET Standard 2.0+ compatible components.
+[GELF](https://docs.graylog.org/en/3.1/pages/gelf.html) provider for [Microsoft.Extensions.Logging](https://docs.microsoft.com/en-us/dotnet/core/extensions/logging) for sending logs to [Graylog](https://www.graylog.org/), [Logstash](https://www.elastic.co/products/logstash) and more from .NET Standard 2.0+ compatible components.
 
 ## Usage
 
@@ -10,7 +10,7 @@ Start by installing the [NuGet package](https://www.nuget.org/packages/Gelf.Exte
 dotnet add package Gelf.Extensions.Logging
 ```
 
-### ASP.NET Core 3.x
+### ASP.NET Core
 
 Use the `LoggingBuilder.AddGelf()` extension method from the `Gelf.Extensions.Logging` namespace when configuring your host.
 
@@ -32,7 +32,7 @@ public static IHostBuilder CreateHostBuilder(string[] args) => Host
     });
 ```
 
-Logger options are taken from the "GELF" provider section in `appsettings.json` in the same way as other providers. These are customised further the code above.
+Logger options are taken from the "GELF" provider section in `appsettings.json` in the same way as other providers. These are customised further in the code above.
 
 ```json5
 {
@@ -57,7 +57,7 @@ Logger options are taken from the "GELF" provider section in `appsettings.json` 
 }
 ```
 
-For a full list of options e.g. UDP/HTTP(S) settings, see [`GelfLoggerOptions`](src/Gelf.Extensions.Logging/GelfLoggerOptions.cs). See the [samples](/samples) directory full examples. For more information on providers and logging in general, see the aspnetcore [logging documentation](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/logging/?view=aspnetcore-3.0).
+For a full list of options e.g. UDP/HTTP(S) settings, see [`GelfLoggerOptions`](src/Gelf.Extensions.Logging/GelfLoggerOptions.cs). See the [samples](/samples) directory full examples. For more information on providers and logging in general, see the aspnetcore [logging documentation](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/logging).
 
 ### Additional Fields
 
@@ -99,31 +99,20 @@ Here the message will contain `order_id` and `order_time` fields.
 
 #### Additional Fields Factory
 
-Global additional fields factory, `Func<LogLevel, EventId?, Exception?, Dictionary<string, object>?>`, can be set in `GelfLoggerOptions.AdditionalFieldsFactory`. This can be useful when additional fields value need to be calculated by original log message details like `LogLevel`, `EventId` or `Exception`.
+It is possible to derive additional fields from log data with a factory function. This is useful for adding more information than what is provided by default e.g. the Microsoft log level or exception type.
 
 ```csharp
-public static IHostBuilder CreateHostBuilder(string[] args) => Host
-    .CreateDefaultBuilder(args)
-    .ConfigureWebHostDefaults(webBuilder =>
+options.AdditionalFieldsFactory = (logLevel, eventId, exception) =>
+    new Dictionary<string, object>
     {
-        webBuilder
-            .UseStartup<Startup>()
-            .ConfigureLogging((context, builder) => builder.AddGelf(options =>
-            {
-                options.AdditionalFieldsFactory = (originalLogLevel, originalEvent, originalException) =>
-                    new Dictionary<string, object>
-                    {
-                        {"log_level", originalLogLevel.ToString()},
-                        {"exception_type", originalException?.GetType().ToString()},
-                        {"custom_event_name", originalEvent?.Name}
-                    };
-            }));
-    });
+        ["log_level"] = logLevel.ToString(),
+        ["exception_type"] = exception?.GetType().ToString()
+    };
 ```
 
 ### Log Filtering
 
-The "GELF" provider can be filtered in the same way as the default providers (details [here](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/logging/?view=aspnetcore-3.0#log-filtering)).
+The "GELF" provider can be filtered in the same way as the default providers (details [here](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/logging/?view=aspnetcore-5.0#how-filtering-rules-are-applied)).
 
 ### Compression
 
