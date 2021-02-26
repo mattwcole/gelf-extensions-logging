@@ -12,9 +12,9 @@ namespace Gelf.Extensions.Logging
 
         private Task _processorTask = Task.CompletedTask;
 
-        private readonly Action<Exception> _exceptionHandler;
+        private readonly Action<Exception>? _exceptionHandler;
 
-        public GelfMessageProcessor(IGelfClient gelfClient, Action<Exception> exceptionHandler = null)
+        public GelfMessageProcessor(IGelfClient gelfClient, Action<Exception>? exceptionHandler = null)
         {
             _gelfClient = gelfClient;
             _messageBuffer = new BufferBlock<GelfMessage>(new DataflowBlockOptions

@@ -15,7 +15,7 @@ namespace Gelf.Extensions.Logging
         {
         }
 
-        public GelfLoggerProvider(GelfLoggerOptions options, Action<Exception> exceptionHandler = null)
+        public GelfLoggerProvider(GelfLoggerOptions options, Action<Exception>? exceptionHandler = null)
         {
             if (string.IsNullOrEmpty(options.Host))
             {

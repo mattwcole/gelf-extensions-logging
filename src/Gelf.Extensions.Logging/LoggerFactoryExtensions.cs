@@ -16,7 +16,7 @@ namespace Gelf.Extensions.Logging
         public static ILoggerFactory AddGelf(
             this ILoggerFactory loggerFactory,
             GelfLoggerOptions options,
-            Action<Exception> exceptionHandler = null)
+            Action<Exception>? exceptionHandler = null)
         {
             loggerFactory.AddProvider(new GelfLoggerProvider(options, exceptionHandler));
             return loggerFactory;
