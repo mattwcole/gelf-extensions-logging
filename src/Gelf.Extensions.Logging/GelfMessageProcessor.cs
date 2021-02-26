@@ -12,13 +12,16 @@ namespace Gelf.Extensions.Logging
 
         private Task _processorTask = Task.CompletedTask;
 
-        public GelfMessageProcessor(IGelfClient gelfClient)
+        private readonly Action<Exception> _exceptionHandler;
+
+        public GelfMessageProcessor(IGelfClient gelfClient, Action<Exception> exceptionHandler = null)
         {
             _gelfClient = gelfClient;
             _messageBuffer = new BufferBlock<GelfMessage>(new DataflowBlockOptions
             {
                 BoundedCapacity = 10000
             });
+            _exceptionHandler = exceptionHandler;
         }
 
         public void Start()
@@ -35,12 +38,14 @@ namespace Gelf.Extensions.Logging
                     var message = await _messageBuffer.ReceiveAsync();
                     await _gelfClient.SendMessageAsync(message);
                 }
-                catch (InvalidOperationException)
+                catch (InvalidOperationException invalidOperation)
                 {
                     // The source completed without providing data to receive.
+                    _exceptionHandler?.Invoke(invalidOperation);
                 }
                 catch (Exception ex)
                 {
+                    _exceptionHandler?.Invoke(ex);
                     Debug.Fail("Unhandled exception while sending GELF message.", ex.ToString());
                 }
             }
@@ -56,8 +61,14 @@ namespace Gelf.Extensions.Logging
         {
             if (!_messageBuffer.Post(message))
             {
+                _exceptionHandler?.Invoke(new GelfException("Failed to add GELF message to buffer."));
                 Debug.Fail("Failed to add GELF message to buffer.");
             }
         }
+    }
+
+    public class GelfException : Exception
+    {
+        public GelfException(string message) : base(message) { }
     }
 }
