@@ -15,7 +15,7 @@ namespace Gelf.Extensions.Logging
         {
         }
 
-        public GelfLoggerProvider(GelfLoggerOptions options)
+        public GelfLoggerProvider(GelfLoggerOptions options, Action<Exception> exceptionHandler = null)
         {
             if (string.IsNullOrEmpty(options.Host))
             {
@@ -29,7 +29,7 @@ namespace Gelf.Extensions.Logging
 
             _options = options;
             _gelfClient = CreateGelfClient(_options);
-            _messageProcessor = new GelfMessageProcessor(_gelfClient);
+            _messageProcessor = new GelfMessageProcessor(_gelfClient, exceptionHandler);
             _messageProcessor.Start();
         }
 

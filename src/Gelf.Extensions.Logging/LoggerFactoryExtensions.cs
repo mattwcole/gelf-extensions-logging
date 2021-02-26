@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System;
+using Microsoft.Extensions.Logging;
 
 namespace Gelf.Extensions.Logging
 {
@@ -10,10 +11,14 @@ namespace Gelf.Extensions.Logging
         /// </summary>
         /// <param name="loggerFactory"></param>
         /// <param name="options"></param>
+        /// <param name="exceptionHandler"></param>
         /// <returns></returns>
-        public static ILoggerFactory AddGelf(this ILoggerFactory loggerFactory, GelfLoggerOptions options)
+        public static ILoggerFactory AddGelf(
+            this ILoggerFactory loggerFactory,
+            GelfLoggerOptions options,
+            Action<Exception> exceptionHandler = null)
         {
-            loggerFactory.AddProvider(new GelfLoggerProvider(options));
+            loggerFactory.AddProvider(new GelfLoggerProvider(options, exceptionHandler));
             return loggerFactory;
         }
     }
