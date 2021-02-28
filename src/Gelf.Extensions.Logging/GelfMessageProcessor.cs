@@ -41,7 +41,7 @@ namespace Gelf.Extensions.Logging
                 }
                 catch (Exception ex)
                 {
-                    Debug.Fail("Unhandled exception while sending GELF message.", ex.ToString());
+                    Trace.TraceError($"Unhandled exception while sending GELF message{Environment.NewLine}{{0}}", ex);
                 }
             }
         }
@@ -56,7 +56,7 @@ namespace Gelf.Extensions.Logging
         {
             if (!_messageBuffer.Post(message))
             {
-                Debug.Fail("Failed to add GELF message to buffer.");
+                Trace.TraceError("Failed to add GELF message to buffer");
             }
         }
     }

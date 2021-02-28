@@ -25,7 +25,7 @@ namespace Gelf.Extensions.Logging
         {
             _options = options;
             _maxMessageBodySize = options.UdpMaxChunkSize - MessageHeaderSize;
-            _udpClient = new UdpClient(_options.Host, _options.Port);
+            _udpClient = new UdpClient(_options.Host!, _options.Port);
             _random = new Random();
         }
 
@@ -65,7 +65,7 @@ namespace Gelf.Extensions.Logging
             var sequenceCount = (int) Math.Ceiling(messageBytes.Length / (double) _maxMessageBodySize);
             if (sequenceCount > MaxChunks)
             {
-                Debug.Fail($"GELF message contains {sequenceCount} chunks, exceeding the maximum of {MaxChunks}.");
+                Trace.TraceError($"GELF message contains {sequenceCount} chunks, exceeding the maximum of {MaxChunks}");
                 yield break;
             }
 

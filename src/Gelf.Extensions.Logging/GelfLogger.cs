@@ -148,7 +148,7 @@ namespace Gelf.Extensions.Logging
                     }
                     else
                     {
-                        Debug.Fail($"GELF message has additional field with invalid key \"{field.Key}\".");
+                        Trace.TraceError($"GELF message has additional field with invalid key \"{field.Key}\"");
                     }
                 }
                 else if (_options.IncludeMessageTemplates)

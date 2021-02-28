@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 
+// ReSharper disable CollectionNeverUpdated.Global
+
 namespace Gelf.Extensions.Logging
 {
     public class GelfLoggerOptions
