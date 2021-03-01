@@ -6,7 +6,7 @@ namespace Gelf.Extensions.Logging
 {
     public class GelfLogScope
     {
-        private static readonly AsyncLocal<GelfLogScope?> Value = new();
+        private static readonly AsyncLocal<GelfLogScope?> Value = new AsyncLocal<GelfLogScope?>();
 
         private GelfLogScope(IEnumerable<KeyValuePair<string, object>> additionalFields)
         {
