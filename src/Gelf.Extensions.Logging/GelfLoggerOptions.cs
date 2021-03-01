@@ -49,7 +49,7 @@ namespace Gelf.Extensions.Logging
         /// <summary>
         ///     Additional fields that will be attached to all log messages.
         /// </summary>
-        public Dictionary<string, object> AdditionalFields { get; set; } = new Dictionary<string, object>();
+        public Dictionary<string, object> AdditionalFields { get; set; } = new();
 
         /// <summary>
         ///     Additional fields computed based on raw log data.
@@ -59,7 +59,7 @@ namespace Gelf.Extensions.Logging
         /// <summary>
         ///     Headers used when sending logs via HTTP(S).
         /// </summary>
-        public Dictionary<string, string> HttpHeaders { get; set; } = new Dictionary<string, string>();
+        public Dictionary<string, string> HttpHeaders { get; set; } = new();
 
         /// <summary>
         ///     Timeout used when sending logs via HTTP(S).
