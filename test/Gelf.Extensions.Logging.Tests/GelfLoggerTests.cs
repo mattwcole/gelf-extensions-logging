@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Bogus;
 using Gelf.Extensions.Logging.Tests.Fixtures;
@@ -266,6 +267,23 @@ namespace Gelf.Extensions.Logging.Tests
             Assert.Equal("Error", message.log_level);
             Assert.Equal(exception.GetType().ToString(), message.exception_type);
             Assert.Equal("foo", message.custom_event_name);
+        }
+
+        [Fact]
+        public async Task Sends_activity_tracking_additional_fields()
+        {
+            using var activity = new Activity("an activity").Start();
+            Activity.Current = activity;
+
+            using var loggerFactory = LoggerFixture.CreateLoggerFactory(
+                LoggerFixture.LoggerOptions, ActivityTrackingOptions.TraceId|ActivityTrackingOptions.SpanId);
+            var sut = loggerFactory.CreateLogger(nameof(GelfLoggerTests));
+
+            sut.LogInformation(Faker.Lorem.Sentence());
+            var message = await GraylogFixture.WaitForMessageAsync();
+
+            Assert.Equal(Activity.Current.TraceId.ToString(), message.TraceId);
+            Assert.Equal(Activity.Current.SpanId.ToString(), message.SpanId);
         }
     }
 }

@@ -10,7 +10,7 @@ namespace Gelf.Extensions.Logging.Tests.Fixtures
         public LoggerFixture(GelfLoggerOptions options)
         {
             TestContext.TestId = Guid.NewGuid().ToString();
-            
+
             LoggerOptions = options;
             _loggerFactory = new LoggerFactory();
             _loggerFactory.AddGelf(LoggerOptions);
@@ -18,9 +18,13 @@ namespace Gelf.Extensions.Logging.Tests.Fixtures
 
         public GelfLoggerOptions LoggerOptions { get; }
 
-        public ILoggerFactory CreateLoggerFactory(GelfLoggerOptions options)
+        public ILoggerFactory CreateLoggerFactory(GelfLoggerOptions options,
+            ActivityTrackingOptions trackingOptions = ActivityTrackingOptions.None)
         {
-            var loggerFactory = new LoggerFactory();
+            var loggerFactory = LoggerFactory.Create(builder => builder
+                .Configure(loggerOptions => loggerOptions
+                    .ActivityTrackingOptions = trackingOptions));
+
             loggerFactory.AddGelf(options);
 
             var logger = loggerFactory.CreateLogger<LoggerFixture>();
