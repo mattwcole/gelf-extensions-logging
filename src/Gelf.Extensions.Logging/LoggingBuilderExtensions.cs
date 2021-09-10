@@ -17,8 +17,15 @@ namespace Gelf.Extensions.Logging
         public static ILoggingBuilder AddGelf(this ILoggingBuilder builder)
         {
             builder.AddConfiguration();
-            builder.Services.AddSingleton<ILoggerProvider, GelfLoggerProvider>();
-            builder.Services.TryAddSingleton<IConfigureOptions<GelfLoggerOptions>, GelfLoggerOptionsSetup>();
+
+            builder.Services.TryAddEnumerable(
+                ServiceDescriptor.Singleton<ILoggerProvider, GelfLoggerProvider>());
+            builder.Services.TryAddEnumerable(
+                ServiceDescriptor.Singleton<IConfigureOptions<GelfLoggerOptions>, GelfLoggerOptionsSetup>());
+            builder.Services.TryAddEnumerable(
+                ServiceDescriptor.Singleton<
+                    IOptionsChangeTokenSource<GelfLoggerOptions>,
+                    LoggerProviderOptionsChangeTokenSource<GelfLoggerOptions, GelfLoggerProvider>>());
 
             return builder;
         }

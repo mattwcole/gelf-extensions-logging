@@ -23,16 +23,16 @@ namespace Gelf.Extensions.Logging
 
         private readonly string _name;
         private readonly GelfMessageProcessor _messageProcessor;
-        private readonly GelfLoggerOptions _options;
 
         public GelfLogger(string name, GelfMessageProcessor messageProcessor, GelfLoggerOptions options)
         {
             _name = name;
             _messageProcessor = messageProcessor;
-            _options = options;
+            Options = options;
         }
 
         internal IExternalScopeProvider? ScopeProvider { get; set; }
+        internal GelfLoggerOptions Options { get; set; }
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state,
             Exception? exception, Func<TState, Exception?, string> formatter)
@@ -45,7 +45,7 @@ namespace Gelf.Extensions.Logging
             var message = new GelfMessage
             {
                 ShortMessage = formatter(state, exception),
-                Host = _options.LogSource,
+                Host = Options.LogSource,
                 Logger = _name,
                 Exception = exception?.ToString(),
                 Level = GetLevel(logLevel),
@@ -93,7 +93,7 @@ namespace Gelf.Extensions.Logging
         private IEnumerable<KeyValuePair<string, object>> GetAdditionalFields<TState>(
             LogLevel logLevel, EventId eventId, TState state, Exception? exception)
         {
-            var additionalFields = _options.AdditionalFields
+            var additionalFields = Options.AdditionalFields
                 .Concat(GetFactoryAdditionalFields(logLevel, eventId, exception))
                 .Concat(GetScopeAdditionalFields())
                 .Concat(GetStateAdditionalFields(state));
@@ -111,7 +111,7 @@ namespace Gelf.Extensions.Logging
                         Debug.Fail($"GELF message has additional field with invalid key \"{field.Key}\".");
                     }
                 }
-                else if (_options.IncludeMessageTemplates)
+                else if (Options.IncludeMessageTemplates)
                 {
                     yield return new KeyValuePair<string, object>("message_template", field.Value);
                 }
@@ -121,13 +121,13 @@ namespace Gelf.Extensions.Logging
         private IEnumerable<KeyValuePair<string, object>> GetFactoryAdditionalFields(
             LogLevel logLevel, EventId eventId, Exception? exception)
         {
-            return _options.AdditionalFieldsFactory?.Invoke(logLevel, eventId, exception) ??
+            return Options.AdditionalFieldsFactory?.Invoke(logLevel, eventId, exception) ??
                    Enumerable.Empty<KeyValuePair<string, object>>();
         }
 
         private IEnumerable<KeyValuePair<string, object>> GetScopeAdditionalFields()
         {
-            if (!_options.IncludeScopes)
+            if (!Options.IncludeScopes)
             {
                 return Enumerable.Empty<KeyValuePair<string, object>>();
             }

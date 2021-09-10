@@ -8,18 +8,44 @@ namespace Gelf.Extensions.Logging
     [ProviderAlias("GELF")]
     public class GelfLoggerProvider : ILoggerProvider, ISupportExternalScope
     {
-        private readonly GelfLoggerOptions _options;
-        private readonly GelfMessageProcessor _messageProcessor;
-        private readonly IGelfClient _gelfClient;
+        private readonly IOptionsMonitor<GelfLoggerOptions> _options;
         private readonly ConcurrentDictionary<string, GelfLogger> _loggers;
+        private readonly IDisposable _optionsReloadToken;
 
+        private IGelfClient? _gelfClient;
+        private GelfMessageProcessor? _messageProcessor;
         private IExternalScopeProvider? _scopeProvider;
 
-        public GelfLoggerProvider(IOptions<GelfLoggerOptions> options) : this(options.Value)
+        public GelfLoggerProvider(IOptionsMonitor<GelfLoggerOptions> options)
         {
+            _options = options;
+            _loggers = new ConcurrentDictionary<string, GelfLogger>();
+
+            LoadLoggerOptions(options.CurrentValue);
+
+            var onOptionsChanged = Debouncer.Debounce<GelfLoggerOptions>(LoadLoggerOptions, TimeSpan.FromSeconds(1));
+            _optionsReloadToken = options.OnChange(onOptionsChanged);
         }
 
-        public GelfLoggerProvider(GelfLoggerOptions options)
+        public ILogger CreateLogger(string name)
+        {
+            return _loggers.GetOrAdd(name, newName => new GelfLogger(
+                newName, _messageProcessor!, _options.CurrentValue)
+            {
+                ScopeProvider = _scopeProvider
+            });
+        }
+
+        public void SetScopeProvider(IExternalScopeProvider scopeProvider)
+        {
+            _scopeProvider = scopeProvider;
+            foreach (var logger in _loggers)
+            {
+                logger.Value.ScopeProvider = _scopeProvider;
+            }
+        }
+
+        private void LoadLoggerOptions(GelfLoggerOptions options)
         {
             if (string.IsNullOrEmpty(options.Host))
             {
@@ -31,19 +57,25 @@ namespace Gelf.Extensions.Logging
                 throw new ArgumentException("GELF log source is required.", nameof(options));
             }
 
-            _options = options;
-            _gelfClient = CreateGelfClient(_options);
-            _messageProcessor = new GelfMessageProcessor(_gelfClient);
-            _messageProcessor.Start();
-            _loggers = new ConcurrentDictionary<string, GelfLogger>();
-        }
+            var gelfClient = CreateGelfClient(options);
 
-        public ILogger CreateLogger(string name)
-        {
-            return _loggers.GetOrAdd(name, newName => new GelfLogger(newName, _messageProcessor, _options)
+            if (_messageProcessor == null)
             {
-                ScopeProvider = _scopeProvider
-            });
+                _messageProcessor = new GelfMessageProcessor(gelfClient);
+                _messageProcessor.Start();
+            }
+            else
+            {
+                _messageProcessor.GelfClient = gelfClient;
+                _gelfClient?.Dispose();
+            }
+
+            _gelfClient = gelfClient;
+
+            foreach (var logger in _loggers)
+            {
+                logger.Value.Options = options;
+            }
         }
 
         private static IGelfClient CreateGelfClient(GelfLoggerOptions options)
@@ -59,17 +91,9 @@ namespace Gelf.Extensions.Logging
 
         public void Dispose()
         {
-            _messageProcessor.Stop();
-            _gelfClient.Dispose();
-        }
-
-        public void SetScopeProvider(IExternalScopeProvider scopeProvider)
-        {
-            _scopeProvider = scopeProvider;
-            foreach (var logger in _loggers)
-            {
-                logger.Value.ScopeProvider = _scopeProvider;
-            }
+            _messageProcessor?.Stop();
+            _gelfClient?.Dispose();
+            _optionsReloadToken.Dispose();
         }
     }
 }
