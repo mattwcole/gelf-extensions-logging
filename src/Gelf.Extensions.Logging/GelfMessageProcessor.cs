@@ -7,19 +7,20 @@ namespace Gelf.Extensions.Logging
 {
     public class GelfMessageProcessor
     {
-        private readonly IGelfClient _gelfClient;
         private readonly BufferBlock<GelfMessage> _messageBuffer;
 
         private Task _processorTask = Task.CompletedTask;
 
         public GelfMessageProcessor(IGelfClient gelfClient)
         {
-            _gelfClient = gelfClient;
+            GelfClient = gelfClient;
             _messageBuffer = new BufferBlock<GelfMessage>(new DataflowBlockOptions
             {
                 BoundedCapacity = 10000
             });
         }
+
+        internal IGelfClient GelfClient { get; set; }
 
         public void Start()
         {
@@ -33,7 +34,7 @@ namespace Gelf.Extensions.Logging
                 try
                 {
                     var message = await _messageBuffer.ReceiveAsync();
-                    await _gelfClient.SendMessageAsync(message);
+                    await GelfClient.SendMessageAsync(message);
                 }
                 catch (InvalidOperationException)
                 {

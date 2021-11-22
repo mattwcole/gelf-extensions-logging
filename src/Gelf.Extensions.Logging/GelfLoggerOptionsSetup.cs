@@ -3,7 +3,7 @@ using Microsoft.Extensions.Options;
 
 namespace Gelf.Extensions.Logging
 {
-    public class GelfLoggerOptionsSetup : ConfigureFromConfigurationOptions<GelfLoggerOptions>
+    internal class GelfLoggerOptionsSetup : ConfigureFromConfigurationOptions<GelfLoggerOptions>
     {
         public GelfLoggerOptionsSetup(ILoggerProviderConfiguration<GelfLoggerProvider> providerConfiguration)
             : base(providerConfiguration.Configuration)
