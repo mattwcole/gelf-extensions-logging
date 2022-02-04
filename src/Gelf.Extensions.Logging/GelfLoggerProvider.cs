@@ -83,6 +83,7 @@ namespace Gelf.Extensions.Logging
             return options.Protocol switch
             {
                 GelfProtocol.Udp => new UdpGelfClient(options),
+                GelfProtocol.Tcp => new TcpGelfClient(options),
                 GelfProtocol.Http => new HttpGelfClient(options),
                 GelfProtocol.Https => new HttpGelfClient(options),
                 _ => throw new ArgumentException("Unknown protocol.", nameof(options))
