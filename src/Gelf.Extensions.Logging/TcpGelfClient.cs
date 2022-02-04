@@ -4,66 +4,66 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Gelf.Extensions.Logging;
-
-public class TcpGelfClient : IGelfClient
+namespace Gelf.Extensions.Logging
 {
-    private readonly ReaderWriterLockSlim _lockSlim = new();
-    private readonly GelfLoggerOptions _options;
-    private TcpClient? _client;
-    private Stream? _stream;
-
-    public TcpGelfClient(GelfLoggerOptions options)
+    public class TcpGelfClient : IGelfClient
     {
-        _options = options;
-    }
+        private readonly ReaderWriterLockSlim _lockSlim = new();
+        private readonly GelfLoggerOptions _options;
+        private TcpClient? _client;
+        private Stream? _stream;
 
-    public void Dispose()
-    {
-        _lockSlim.Dispose();
-        _stream?.Dispose();
-        _client?.Dispose();
-    }
-
-    public async Task SendMessageAsync(GelfMessage message)
-    {
-        var messageBytes = Encoding.UTF8.GetBytes(message.ToJson() + '\0');
-        try
+        public TcpGelfClient(GelfLoggerOptions options)
         {
-            var stream = GetStream();
-            await stream.WriteAsync(messageBytes, 0, messageBytes.Length);
+            _options = options;
         }
-        catch (SocketException)
+
+        public void Dispose()
         {
-            if (_options.ThrowTcpExceptions)
-                throw;
+            _lockSlim.Dispose();
+            _stream?.Dispose();
+            _client?.Dispose();
         }
-    }
 
-    private Stream GetStream()
-    {
-        _lockSlim.EnterUpgradeableReadLock();
-        try
+        public async Task SendMessageAsync(GelfMessage message)
         {
-            if (_client?.Connected == true && _stream != null)
-                return _stream;
-
-            _lockSlim.EnterWriteLock();
+            var messageBytes = Encoding.UTF8.GetBytes(message.ToJson() + '\0');
             try
             {
-                _client =
-                    new TcpClient(_options.Host!, _options.Port) {SendTimeout = _options.TcpTimeoutMs};
-                _stream = _client.GetStream();
-                return _stream;
+                var stream = GetStream();
+                await stream.WriteAsync(messageBytes, 0, messageBytes.Length);
+            }
+            catch (SocketException)
+            {
+                if (_options.ThrowTcpExceptions)
+                    throw;
+            }
+        }
+
+        private Stream GetStream()
+        {
+            _lockSlim.EnterUpgradeableReadLock();
+            try
+            {
+                if (_client?.Connected == true && _stream != null)
+                    return _stream;
+
+                _lockSlim.EnterWriteLock();
+                try
+                {
+                    _client = new TcpClient(_options.Host!, _options.Port) {SendTimeout = _options.TcpTimeoutMs};
+                    _stream = _client.GetStream();
+                    return _stream;
+                }
+                finally
+                {
+                    _lockSlim.ExitWriteLock();
+                }
             }
             finally
             {
-                _lockSlim.ExitWriteLock();
+                _lockSlim.ExitUpgradeableReadLock();
             }
-        }
-        finally
-        {
-            _lockSlim.ExitUpgradeableReadLock();
         }
     }
 }
