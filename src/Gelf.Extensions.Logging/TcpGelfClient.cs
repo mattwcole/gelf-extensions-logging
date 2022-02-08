@@ -30,8 +30,24 @@ namespace Gelf.Extensions.Logging
             var messageBytes = Encoding.UTF8.GetBytes(message.ToJson() + '\0');
             try
             {
-                var stream = GetStream();
-                await stream.WriteAsync(messageBytes, 0, messageBytes.Length);
+                _lockSlim.EnterWriteLock();
+                try
+                {
+                    var stream = GetStream(false);
+                    await stream.WriteAsync(messageBytes, 0, messageBytes.Length);
+                    await stream.FlushAsync();
+                }
+                catch (IOException)
+                {
+                    // Retry once on IOException (in case of OS aborted connections)
+                    var stream = GetStream(true);
+                    await stream.WriteAsync(messageBytes, 0, messageBytes.Length);
+                    await stream.FlushAsync();
+                }
+                finally
+                {
+                    _lockSlim.ExitWriteLock();
+                }
             }
             catch (SocketException)
             {
@@ -40,30 +56,25 @@ namespace Gelf.Extensions.Logging
             }
         }
 
-        private Stream GetStream()
+        private Stream GetStream(bool recreate)
         {
-            _lockSlim.EnterUpgradeableReadLock();
-            try
+            if (recreate || _client == null || _stream == null || !_client.Connected)
             {
-                if (_client?.Connected == true && _stream != null)
-                    return _stream;
-
-                _lockSlim.EnterWriteLock();
                 try
                 {
-                    _client = new TcpClient(_options.Host!, _options.Port) {SendTimeout = _options.TcpTimeoutMs};
-                    _stream = _client.GetStream();
-                    return _stream;
+                    _stream?.Close();
+                    _client?.Close();
                 }
-                finally
+                catch
                 {
-                    _lockSlim.ExitWriteLock();
+                    // Ignore any error during the closing of the client or stream
                 }
+
+                _client = new TcpClient(_options.Host!, _options.Port);
+                _stream = _client.GetStream();
             }
-            finally
-            {
-                _lockSlim.ExitUpgradeableReadLock();
-            }
+
+            return _stream;
         }
     }
 }
