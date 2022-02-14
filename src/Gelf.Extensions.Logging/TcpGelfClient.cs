@@ -8,7 +8,6 @@ namespace Gelf.Extensions.Logging
 {
     public class TcpGelfClient : IGelfClient
     {
-        private readonly ReaderWriterLockSlim _lockSlim = new();
         private readonly GelfLoggerOptions _options;
         private TcpClient? _client;
         private Stream? _stream;
@@ -20,7 +19,6 @@ namespace Gelf.Extensions.Logging
 
         public void Dispose()
         {
-            _lockSlim.Dispose();
             _stream?.Dispose();
             _client?.Dispose();
         }
@@ -30,23 +28,18 @@ namespace Gelf.Extensions.Logging
             var messageBytes = Encoding.UTF8.GetBytes(message.ToJson() + '\0');
             try
             {
-                _lockSlim.EnterWriteLock();
                 try
                 {
                     var stream = GetStream(false);
-                    await stream.WriteAsync(messageBytes, 0, messageBytes.Length);
-                    await stream.FlushAsync();
+                    await stream.WriteAsync(messageBytes, 0, messageBytes.Length).ConfigureAwait(true);
+                    await stream.FlushAsync().ConfigureAwait(true);
                 }
                 catch (IOException)
                 {
                     // Retry once on IOException (in case of OS aborted connections)
                     var stream = GetStream(true);
-                    await stream.WriteAsync(messageBytes, 0, messageBytes.Length);
-                    await stream.FlushAsync();
-                }
-                finally
-                {
-                    _lockSlim.ExitWriteLock();
+                    await stream.WriteAsync(messageBytes, 0, messageBytes.Length).ConfigureAwait(true);
+                    await stream.FlushAsync().ConfigureAwait(true);
                 }
             }
             catch (SocketException)
