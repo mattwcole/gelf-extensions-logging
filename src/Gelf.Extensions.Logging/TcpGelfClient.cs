@@ -28,24 +28,16 @@ namespace Gelf.Extensions.Logging
             var messageBytes = Encoding.UTF8.GetBytes(message.ToJson() + '\0');
             try
             {
-                try
-                {
-                    var stream = GetStream(false);
-                    await stream.WriteAsync(messageBytes, 0, messageBytes.Length).ConfigureAwait(true);
-                    await stream.FlushAsync().ConfigureAwait(true);
-                }
-                catch (IOException)
-                {
-                    // Retry once on IOException (in case of OS aborted connections)
-                    var stream = GetStream(true);
-                    await stream.WriteAsync(messageBytes, 0, messageBytes.Length).ConfigureAwait(true);
-                    await stream.FlushAsync().ConfigureAwait(true);
-                }
+                var stream = GetStream(false);
+                await stream.WriteAsync(messageBytes, 0, messageBytes.Length).ConfigureAwait(true);
+                await stream.FlushAsync().ConfigureAwait(true);
             }
-            catch (SocketException)
+            catch (IOException)
             {
-                if (_options.ThrowTcpExceptions)
-                    throw;
+                // Retry once on IOException (in case of OS aborted connections)
+                var stream = GetStream(true);
+                await stream.WriteAsync(messageBytes, 0, messageBytes.Length).ConfigureAwait(true);
+                await stream.FlushAsync().ConfigureAwait(true);
             }
         }
 
