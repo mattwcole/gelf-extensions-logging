@@ -32,11 +32,6 @@ namespace Gelf.Extensions.Logging
         public string? LogSource { get; set; }
 
         /// <summary>
-        ///     Set maximum duration to wait for TCP requests before cancelling (Default 1000).
-        /// </summary>
-        public int TcpTimeoutMs { get; set; } = 1000;
-
-        /// <summary>
         ///     Enable GZip message compression for UDP logging.
         /// </summary>
         public bool CompressUdp { get; set; } = true;
