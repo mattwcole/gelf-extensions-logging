@@ -72,7 +72,7 @@ namespace Gelf.Extensions.Logging.Tests.Fixtures
         private async Task<string> CreateInputAsync()
         {
             List<dynamic> existingInputs = (await _httpClient.GetAsync("system/inputs")).inputs;
-            var input = existingInputs.SingleOrDefault(i => i.attributes.port == InputPort);
+            var input = existingInputs.SingleOrDefault(i => i.attributes.port == InputPort && i.type == InputType);
             if (input != null)
             {
                 return input.id;

@@ -3,6 +3,7 @@
     public enum GelfProtocol
     {
         Udp,
+        Tcp,
         Http,
         Https
     }
