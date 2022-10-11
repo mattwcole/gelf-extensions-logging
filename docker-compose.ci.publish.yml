@@ -2,7 +2,7 @@ version: '3'
 
 services:
   ci-build:
-    image: mcr.microsoft.com/dotnet/sdk:5.0
+    image: mcr.microsoft.com/dotnet/sdk:6.0
     volumes:
       - .:/src
     working_dir: /src
