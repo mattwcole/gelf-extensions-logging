@@ -10,15 +10,6 @@ namespace Gelf.Extensions.Logging
     public class GelfLogger : ILogger
     {
         private static readonly Regex AdditionalFieldKeyRegex = new(@"^[\w\.\-]*$", RegexOptions.Compiled);
-        private static readonly HashSet<string> ReservedAdditionalFieldKeys = new()
-        {
-            "id",
-            "logger",
-            "exception",
-            "event_id",
-            "event_name",
-            "message_template"
-        };
 
         private readonly string _name;
         private readonly GelfMessageProcessor _messageProcessor;
@@ -49,7 +40,11 @@ namespace Gelf.Extensions.Logging
                 Exception = exception?.ToString(),
                 Level = GetLevel(logLevel),
                 Timestamp = GetTimestamp(),
-                AdditionalFields = GetAdditionalFields(logLevel, eventId, state, exception).ToArray()
+                AdditionalFields = GetAdditionalFields(logLevel, eventId, state, exception).ToArray(),
+                LoggerPropertyName = Options.LoggerPropertyName,
+                ExceptionPropertyName = Options.ExceptionPropertyName,
+                EventIdPropertyName = Options.EventIdPropertyName,
+                EventNamePropertyName = Options.EventNamePropertyName,
             };
 
             if (eventId != default)
@@ -101,7 +96,7 @@ namespace Gelf.Extensions.Logging
             {
                 if (field.Key != "{OriginalFormat}")
                 {
-                    if (AdditionalFieldKeyRegex.IsMatch(field.Key) && !ReservedAdditionalFieldKeys.Contains(field.Key))
+                    if (AdditionalFieldKeyRegex.IsMatch(field.Key) && !IsReservedAdditionalFieldKey(field.Key))
                     {
                         yield return field;
                     }
@@ -115,6 +110,20 @@ namespace Gelf.Extensions.Logging
                     yield return new KeyValuePair<string, object>("message_template", field.Value);
                 }
             }
+        }
+
+        private bool IsReservedAdditionalFieldKey(string key)
+        {
+            if (key == "id")
+                return true;
+
+            if (key == Options.LoggerFieldKey || key == Options.ExceptionFieldKey || key == Options.EventIdFieldKey || key == Options.EventNameFieldKey)
+                return true;
+
+            if (Options.IncludeMessageTemplates && key == "message_template")
+                return true;
+
+            return false;
         }
 
         private IEnumerable<KeyValuePair<string, object>> GetFactoryAdditionalFields(

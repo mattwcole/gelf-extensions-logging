@@ -26,5 +26,10 @@ namespace Gelf.Extensions.Logging
 
         public IReadOnlyCollection<KeyValuePair<string, object>> AdditionalFields { get; set; } =
             Array.Empty<KeyValuePair<string, object>>();
+
+        internal string? LoggerPropertyName { get; set; }
+        internal string? ExceptionPropertyName { get; set; }
+        internal string? EventIdPropertyName { get; set; }
+        internal string? EventNamePropertyName { get; set; }
     }
 }

@@ -70,5 +70,53 @@ namespace Gelf.Extensions.Logging
         ///     Include a field with the original message template before structured log parameters are replaced.
         /// </summary>
         public bool IncludeMessageTemplates { get; set; }
+
+        /// <summary>
+        ///     The field key to use for the logger name, or null to omit.
+        /// </summary>
+        public string? LoggerFieldKey
+        {
+            get => _loggerField.Key;
+            set => _loggerField = FieldFromValue(value);
+        }
+
+        /// <summary>
+        ///     The field key to use for the exception details, or null to omit.
+        /// </summary>
+        public string? ExceptionFieldKey
+        {
+            get => _exceptionField.Key;
+            set => _exceptionField = FieldFromValue(value);
+        }
+
+        /// <summary>
+        ///     The field key to use for the event ID, or null to omit.
+        /// </summary>
+        public string? EventIdFieldKey
+        {
+            get => _eventIdField.Key;
+            set => _eventIdField = FieldFromValue(value);
+        }
+
+        /// <summary>
+        ///     The field key to use for the event name, or null to omit.
+        /// </summary>
+        public string? EventNameFieldKey
+        {
+            get => _eventNameField.Key;
+            set => _eventNameField = FieldFromValue(value);
+        }
+
+        internal string? LoggerPropertyName => _loggerField.Name;
+        internal string? ExceptionPropertyName => _exceptionField.Name;
+        internal string? EventIdPropertyName => _eventIdField.Name;
+        internal string? EventNamePropertyName => _eventNameField.Name;
+
+        private static (string? Key, string? Name) FieldFromValue(string? value) => value == null ? default : (value, $"_{value}");
+
+        private (string? Key, string? Name) _loggerField = FieldFromValue("logger");
+        private (string? Key, string? Name) _exceptionField = FieldFromValue("exception");
+        private (string? Key, string? Name) _eventIdField = FieldFromValue("event_id");
+        private (string? Key, string? Name) _eventNameField = FieldFromValue("event_name");
     }
 }

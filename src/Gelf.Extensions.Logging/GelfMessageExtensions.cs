@@ -18,10 +18,10 @@ namespace Gelf.Extensions.Logging
             jsonWriter.WriteStringUnlessNull("short_message", message.ShortMessage);
             jsonWriter.WriteNumber("timestamp", message.Timestamp);
             jsonWriter.WriteNumber("level", (int) message.Level);
-            jsonWriter.WriteStringUnlessNull("_logger", message.Logger);
-            jsonWriter.WriteStringUnlessNull("_exception", message.Exception);
-            jsonWriter.WriteNumberUnlessNull("_event_id", message.EventId);
-            jsonWriter.WriteStringUnlessNull("_event_name", message.EventName);
+            jsonWriter.WriteStringUnlessNull(message.LoggerPropertyName, message.Logger);
+            jsonWriter.WriteStringUnlessNull(message.ExceptionPropertyName, message.Exception);
+            jsonWriter.WriteNumberUnlessNull(message.EventIdPropertyName, message.EventId);
+            jsonWriter.WriteStringUnlessNull(message.EventNamePropertyName, message.EventName);
 
             foreach (var field in message.AdditionalFields)
             {
@@ -81,17 +81,17 @@ namespace Gelf.Extensions.Logging
             }
         }
 
-        private static void WriteStringUnlessNull(this Utf8JsonWriter jsonWriter, string propertyName, string? value)
+        private static void WriteStringUnlessNull(this Utf8JsonWriter jsonWriter, string? propertyName, string? value)
         {
-            if (value != null)
+            if (propertyName != null && value != null)
             {
                 jsonWriter.WriteString(propertyName, value);
             }
         }
 
-        private static void WriteNumberUnlessNull(this Utf8JsonWriter jsonWriter, string propertyName, int? value)
+        private static void WriteNumberUnlessNull(this Utf8JsonWriter jsonWriter, string? propertyName, int? value)
         {
-            if (value != null)
+            if (propertyName != null && value != null)
             {
                 jsonWriter.WriteNumber(propertyName, value.Value);
             }
