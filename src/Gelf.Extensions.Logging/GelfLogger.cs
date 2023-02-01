@@ -10,15 +10,6 @@ namespace Gelf.Extensions.Logging
     public class GelfLogger : ILogger
     {
         private static readonly Regex AdditionalFieldKeyRegex = new(@"^[\w\.\-]*$", RegexOptions.Compiled);
-        private static readonly HashSet<string> ReservedAdditionalFieldKeys = new()
-        {
-            "id",
-            "logger",
-            "exception",
-            "event_id",
-            "event_name",
-            "message_template"
-        };
 
         private readonly string _name;
         private readonly GelfMessageProcessor _messageProcessor;
@@ -45,14 +36,14 @@ namespace Gelf.Extensions.Logging
             {
                 ShortMessage = formatter(state, exception),
                 Host = Options.LogSource,
-                Logger = _name,
-                Exception = exception?.ToString(),
+                Logger = Options.IncludeDefaultFields ? _name : null,
+                Exception = Options.IncludeDefaultFields ? exception?.ToString() : null,
                 Level = GetLevel(logLevel),
                 Timestamp = GetTimestamp(),
                 AdditionalFields = GetAdditionalFields(logLevel, eventId, state, exception).ToArray()
             };
 
-            if (eventId != default)
+            if (eventId != default && Options.IncludeDefaultFields)
             {
                 message.EventId = eventId.Id;
                 message.EventName = eventId.Name;
@@ -93,7 +84,7 @@ namespace Gelf.Extensions.Logging
             LogLevel logLevel, EventId eventId, TState state, Exception? exception)
         {
             var additionalFields = Options.AdditionalFields
-                .Concat(GetFactoryAdditionalFields(logLevel, eventId, exception))
+                .Concat(GetFactoryAdditionalFields(_name, logLevel, eventId, exception))
                 .Concat(GetScopeAdditionalFields())
                 .Concat(GetStateAdditionalFields(state));
 
@@ -101,7 +92,7 @@ namespace Gelf.Extensions.Logging
             {
                 if (field.Key != "{OriginalFormat}")
                 {
-                    if (AdditionalFieldKeyRegex.IsMatch(field.Key) && !ReservedAdditionalFieldKeys.Contains(field.Key))
+                    if (AdditionalFieldKeyRegex.IsMatch(field.Key) && !IsReservedAdditionalFieldKey(field.Key))
                     {
                         yield return field;
                     }
@@ -117,10 +108,31 @@ namespace Gelf.Extensions.Logging
             }
         }
 
-        private IEnumerable<KeyValuePair<string, object>> GetFactoryAdditionalFields(
-            LogLevel logLevel, EventId eventId, Exception? exception)
+        private bool IsReservedAdditionalFieldKey(string key)
         {
-            return Options.AdditionalFieldsFactory?.Invoke(logLevel, eventId, exception) ??
+            if (key == "id")
+            {
+                return true;
+            }
+
+            if (Options.IncludeDefaultFields &&
+                (key == "logger" || key == "exception" || key == "event_id" || key == "event_name"))
+            {
+                return true;
+            }
+
+            if (Options.IncludeMessageTemplates && key == "message_template")
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private IEnumerable<KeyValuePair<string, object>> GetFactoryAdditionalFields(
+            string loggerName, LogLevel logLevel, EventId eventId, Exception? exception)
+        {
+            return Options.AdditionalFieldsFactory?.Invoke(new GelfLoggerContext(loggerName, logLevel, eventId, exception)) ??
                    Enumerable.Empty<KeyValuePair<string, object>>();
         }
 
