@@ -54,7 +54,7 @@ namespace Gelf.Extensions.Logging
         /// <summary>
         ///     Additional fields computed based on raw log data.
         /// </summary>
-        public Func<LogLevel, EventId, Exception?, Dictionary<string, object>>? AdditionalFieldsFactory { get; set; }
+        public Func<GelfLogContext, Dictionary<string, object>>? AdditionalFieldsFactory { get; set; }
 
         /// <summary>
         ///     Headers used when sending logs via HTTP(S).
@@ -70,5 +70,10 @@ namespace Gelf.Extensions.Logging
         ///     Include a field with the original message template before structured log parameters are replaced.
         /// </summary>
         public bool IncludeMessageTemplates { get; set; }
+
+        /// <summary>
+        ///     Include default fields (logger, exception, event_id, event_name).
+        /// </summary>
+        public bool IncludeDefaultFields { get; set; } = true;
     }
 }

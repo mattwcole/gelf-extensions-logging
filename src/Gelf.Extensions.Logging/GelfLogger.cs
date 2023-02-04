@@ -10,15 +10,7 @@ namespace Gelf.Extensions.Logging
     public class GelfLogger : ILogger
     {
         private static readonly Regex AdditionalFieldKeyRegex = new(@"^[\w\.\-]*$", RegexOptions.Compiled);
-        private static readonly HashSet<string> ReservedAdditionalFieldKeys = new()
-        {
-            "id",
-            "logger",
-            "exception",
-            "event_id",
-            "event_name",
-            "message_template"
-        };
+        private static readonly HashSet<string> ReservedAdditionalFieldKeys = new() { "id" };
 
         private readonly string _name;
         private readonly GelfMessageProcessor _messageProcessor;
@@ -45,18 +37,10 @@ namespace Gelf.Extensions.Logging
             {
                 ShortMessage = formatter(state, exception),
                 Host = Options.LogSource,
-                Logger = _name,
-                Exception = exception?.ToString(),
                 Level = GetLevel(logLevel),
                 Timestamp = GetTimestamp(),
                 AdditionalFields = GetAdditionalFields(logLevel, eventId, state, exception).ToArray()
             };
-
-            if (eventId != default)
-            {
-                message.EventId = eventId.Id;
-                message.EventName = eventId.Name;
-            }
 
             _messageProcessor.SendMessage(message);
         }
@@ -92,35 +76,30 @@ namespace Gelf.Extensions.Logging
         private IEnumerable<KeyValuePair<string, object>> GetAdditionalFields<TState>(
             LogLevel logLevel, EventId eventId, TState state, Exception? exception)
         {
+            var logContext = new GelfLogContext(_name, logLevel, eventId, exception);
+
             var additionalFields = Options.AdditionalFields
-                .Concat(GetFactoryAdditionalFields(logLevel, eventId, exception))
+                .Concat(GetFactoryAdditionalFields(logContext))
                 .Concat(GetScopeAdditionalFields())
-                .Concat(GetStateAdditionalFields(state));
+                .Concat(GetStateAdditionalFields(state))
+                .Concat(GetDefaultAdditionalFields(logContext));
 
             foreach (var field in additionalFields)
             {
-                if (field.Key != "{OriginalFormat}")
+                if (AdditionalFieldKeyRegex.IsMatch(field.Key) && !ReservedAdditionalFieldKeys.Contains(field.Key))
                 {
-                    if (AdditionalFieldKeyRegex.IsMatch(field.Key) && !ReservedAdditionalFieldKeys.Contains(field.Key))
-                    {
-                        yield return field;
-                    }
-                    else
-                    {
-                        Debug.Fail($"GELF message has additional field with invalid key \"{field.Key}\".");
-                    }
+                    yield return field;
                 }
-                else if (Options.IncludeMessageTemplates)
+                else
                 {
-                    yield return new KeyValuePair<string, object>("message_template", field.Value);
+                    Debug.Fail($"GELF message has additional field with invalid key \"{field.Key}\".");
                 }
             }
         }
 
-        private IEnumerable<KeyValuePair<string, object>> GetFactoryAdditionalFields(
-            LogLevel logLevel, EventId eventId, Exception? exception)
+        private IEnumerable<KeyValuePair<string, object>> GetFactoryAdditionalFields(GelfLogContext logContext)
         {
-            return Options.AdditionalFieldsFactory?.Invoke(logLevel, eventId, exception) ??
+            return Options.AdditionalFieldsFactory?.Invoke(logContext) ??
                    Enumerable.Empty<KeyValuePair<string, object>>();
         }
 
@@ -185,11 +164,43 @@ namespace Gelf.Extensions.Logging
             return additionalFields;
         }
 
-        private static IEnumerable<KeyValuePair<string, object>> GetStateAdditionalFields<TState>(TState state)
+        private IEnumerable<KeyValuePair<string, object>> GetStateAdditionalFields<TState>(TState state)
         {
-            return state is IEnumerable<KeyValuePair<string, object>> additionalFields
-                ? additionalFields
-                : Enumerable.Empty<KeyValuePair<string, object>>();
+            var additionalFields = state as IEnumerable<KeyValuePair<string, object>>
+                                   ?? Enumerable.Empty<KeyValuePair<string, object>>();
+
+            foreach (var field in additionalFields)
+            {
+                if (field.Key != "{OriginalFormat}")
+                {
+                    yield return field;
+                }
+                else if (Options.IncludeMessageTemplates)
+                {
+                    yield return new KeyValuePair<string, object>("message_template", field.Value);
+                }
+            }
+        }
+
+        private IEnumerable<KeyValuePair<string, object>> GetDefaultAdditionalFields(GelfLogContext logContext)
+        {
+            if (!Options.IncludeDefaultFields)
+            {
+                yield break;
+            }
+
+            yield return new KeyValuePair<string, object>("logger", logContext.LoggerName);
+
+            if (logContext.Exception != null)
+            {
+                yield return new KeyValuePair<string, object>("exception", logContext.Exception);
+            }
+
+            if (logContext.EventId != default)
+            {
+                yield return new KeyValuePair<string, object>("event_id", logContext.EventId.Id);
+                yield return new KeyValuePair<string, object>("event_name", logContext.EventId.Name);
+            }
         }
     }
 }

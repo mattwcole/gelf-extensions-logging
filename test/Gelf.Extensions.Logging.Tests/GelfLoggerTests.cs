@@ -88,6 +88,86 @@ namespace Gelf.Extensions.Logging.Tests
         }
 
         [Fact]
+        public async Task Omits_default_fields_via_option()
+        {
+            var options = LoggerFixture.LoggerOptions;
+            options.IncludeDefaultFields = false;
+            var messageText = Faker.Lorem.Sentence();
+            var exception = new Exception("Something went wrong!");
+
+            using var loggerFactory = LoggerFixture.CreateLoggerFactory(options);
+            var sut = loggerFactory.CreateLogger(nameof(GelfLoggerTests));
+            sut.LogError(new EventId(197, "foo"), exception, messageText);
+
+            var message = await GraylogFixture.WaitForMessageAsync();
+
+            Assert.Equal(messageText, message.message);
+            Assert.Throws<RuntimeBinderException>(() => message.logger);
+            Assert.Throws<RuntimeBinderException>(() => message.exception);
+            Assert.Throws<RuntimeBinderException>(() => message.event_id);
+            Assert.Throws<RuntimeBinderException>(() => message.event_name);
+        }
+
+        [Fact]
+        public async Task Renames_optional_fields_via_option()
+        {
+            var options = LoggerFixture.LoggerOptions;
+            options.IncludeDefaultFields = false;
+            options.AdditionalFieldsFactory = logContext => new Dictionary<string, object>
+            {
+                ["Logger"] = logContext.LoggerName,
+                ["Exception"] = logContext.Exception?.ToString(),
+                ["EventId"] = logContext.EventId.Id,
+                ["EventName"] = logContext.EventId.Name,
+            };
+            var messageText = Faker.Lorem.Sentence();
+            var exception = new Exception("Something went wrong!");
+
+            using var loggerFactory = LoggerFixture.CreateLoggerFactory(options);
+            var sut = loggerFactory.CreateLogger(nameof(GelfLoggerTests));
+            sut.LogError(new EventId(197, "foo"), exception, messageText);
+
+            var message = await GraylogFixture.WaitForMessageAsync();
+
+            Assert.Equal(messageText, message.message);
+            Assert.Throws<RuntimeBinderException>(() => message.logger);
+            Assert.Throws<RuntimeBinderException>(() => message.exception);
+            Assert.Throws<RuntimeBinderException>(() => message.event_id);
+            Assert.Throws<RuntimeBinderException>(() => message.event_name);
+            Assert.Equal(nameof(GelfLoggerTests), message.Logger);
+            Assert.Equal(exception.ToString(), message.Exception);
+            Assert.Equal(197, message.EventId);
+            Assert.Equal("foo", message.EventName);
+        }
+
+        [Fact]
+        public async Task Allows_default_fields_when_omitted()
+        {
+            var options = LoggerFixture.LoggerOptions;
+            options.IncludeDefaultFields = false;
+            options.AdditionalFields.Add("logger", "n/a");
+            options.AdditionalFields.Add("exception", "n/a");
+            options.AdditionalFields.Add("event_id", 0);
+            options.AdditionalFields.Add("event_name", "n/a");
+            options.AdditionalFields.Add("message_template", "n/a");
+            var messageText = Faker.Lorem.Sentence();
+            var exception = new Exception("Something went wrong!");
+
+            using var loggerFactory = LoggerFixture.CreateLoggerFactory(options);
+            var sut = loggerFactory.CreateLogger(nameof(GelfLoggerTests));
+            sut.LogError(new EventId(197, "foo"), exception, messageText);
+
+            var message = await GraylogFixture.WaitForMessageAsync();
+
+            Assert.Equal(messageText, message.message);
+            Assert.Equal("n/a", message.logger);
+            Assert.Equal("n/a", message.exception);
+            Assert.Equal(0, message.event_id);
+            Assert.Equal("n/a", message.event_name);
+            Assert.Equal("n/a", message.message_template);
+        }
+
+        [Fact]
         public async Task Sends_message_with_additional_fields_from_options()
         {
             var options = LoggerFixture.LoggerOptions;
@@ -197,6 +277,20 @@ namespace Gelf.Extensions.Logging.Tests
         }
 
         [Fact]
+        public async Task Uses_default_log_fields_when_keys_duplicated()
+        {
+            var sut = LoggerFixture.CreateLogger<GelfLoggerTests>();
+            using (sut.BeginScope(("logger", "scope")))
+            {
+                sut.LogDebug("Structured log line with {logger}", "structured");
+            }
+
+            var message = await GraylogFixture.WaitForMessageAsync();
+
+            Assert.Equal(typeof(GelfLoggerTests).FullName, message.logger);
+        }
+
+        [Fact]
         public async Task Ignores_null_values_in_additional_fields()
         {
             var options = LoggerFixture.LoggerOptions;
@@ -244,12 +338,12 @@ namespace Gelf.Extensions.Logging.Tests
         public async Task Sends_message_with_additional_fields_from_factory()
         {
             var options = LoggerFixture.LoggerOptions;
-            options.AdditionalFieldsFactory = (originalLogLevel, originalEvent, originalException) =>
+            options.AdditionalFieldsFactory = logContext =>
                 new Dictionary<string, object>
                 {
-                    ["log_level"] = originalLogLevel.ToString(),
-                    ["exception_type"] = originalException?.GetType().ToString(),
-                    ["custom_event_name"] = originalEvent.Name
+                    ["log_level"] = logContext.LogLevel.ToString(),
+                    ["exception_type"] = logContext.Exception?.GetType().ToString(),
+                    ["custom_event_name"] = logContext.EventId.Name
                 };
 
             using var loggerFactory = LoggerFixture.CreateLoggerFactory(options);
