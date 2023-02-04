@@ -18,10 +18,6 @@ namespace Gelf.Extensions.Logging
             jsonWriter.WriteStringUnlessNull("short_message", message.ShortMessage);
             jsonWriter.WriteNumber("timestamp", message.Timestamp);
             jsonWriter.WriteNumber("level", (int) message.Level);
-            jsonWriter.WriteStringUnlessNull("_logger", message.Logger);
-            jsonWriter.WriteStringUnlessNull("_exception", message.Exception);
-            jsonWriter.WriteNumberUnlessNull("_event_id", message.EventId);
-            jsonWriter.WriteStringUnlessNull("_event_name", message.EventName);
 
             foreach (var field in message.AdditionalFields)
             {

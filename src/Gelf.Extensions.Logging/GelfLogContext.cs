@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Gelf.Extensions.Logging
 {
-    public class GelfLoggerContext
+    public class GelfLogContext
     {
         /// <summary>
         ///     The logger name.
@@ -25,7 +25,7 @@ namespace Gelf.Extensions.Logging
         /// </summary>
         public Exception? Exception { get; }
 
-        internal GelfLoggerContext(string loggerName, LogLevel logLevel, EventId eventId, Exception? exception)
+        internal GelfLogContext(string loggerName, LogLevel logLevel, EventId eventId, Exception? exception)
         {
             LoggerName = loggerName;
             LogLevel = logLevel;

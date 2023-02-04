@@ -16,14 +16,6 @@ namespace Gelf.Extensions.Logging
 
         public SyslogSeverity Level { get; set; }
 
-        public string? Logger { get; set; }
-
-        public string? Exception { get; set; }
-
-        public int? EventId { get; set; }
-
-        public string? EventName { get; set; }
-
         public IReadOnlyCollection<KeyValuePair<string, object>> AdditionalFields { get; set; } =
             Array.Empty<KeyValuePair<string, object>>();
     }

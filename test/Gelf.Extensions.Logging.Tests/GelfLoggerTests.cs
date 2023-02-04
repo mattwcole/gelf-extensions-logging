@@ -147,7 +147,7 @@ namespace Gelf.Extensions.Logging.Tests
             options.IncludeDefaultFields = false;
             options.AdditionalFields.Add("logger", "n/a");
             options.AdditionalFields.Add("exception", "n/a");
-            options.AdditionalFields.Add("event_id", "n/a");
+            options.AdditionalFields.Add("event_id", 0);
             options.AdditionalFields.Add("event_name", "n/a");
             options.AdditionalFields.Add("message_template", "n/a");
             var messageText = Faker.Lorem.Sentence();
@@ -162,7 +162,7 @@ namespace Gelf.Extensions.Logging.Tests
             Assert.Equal(messageText, message.message);
             Assert.Equal("n/a", message.logger);
             Assert.Equal("n/a", message.exception);
-            Assert.Equal("n/a", message.event_id);
+            Assert.Equal(0, message.event_id);
             Assert.Equal("n/a", message.event_name);
             Assert.Equal("n/a", message.message_template);
         }
@@ -274,6 +274,20 @@ namespace Gelf.Extensions.Logging.Tests
             var message = await GraylogFixture.WaitForMessageAsync();
 
             Assert.Equal("structured", message.foo);
+        }
+
+        [Fact]
+        public async Task Uses_default_log_fields_when_keys_duplicated()
+        {
+            var sut = LoggerFixture.CreateLogger<GelfLoggerTests>();
+            using (sut.BeginScope(("logger", "scope")))
+            {
+                sut.LogDebug("Structured log line with {logger}", "structured");
+            }
+
+            var message = await GraylogFixture.WaitForMessageAsync();
+
+            Assert.Equal(typeof(GelfLoggerTests).FullName, message.logger);
         }
 
         [Fact]
