@@ -73,7 +73,7 @@ namespace Gelf.Extensions.Logging
             return Math.Round(totalSeconds, 3);
         }
 
-        private IEnumerable<KeyValuePair<string, object>> GetAdditionalFields<TState>(
+        private IEnumerable<KeyValuePair<string, object?>> GetAdditionalFields<TState>(
             LogLevel logLevel, EventId eventId, TState state, Exception? exception)
         {
             var logContext = new GelfLogContext(_name, logLevel, eventId, exception);
@@ -97,66 +97,66 @@ namespace Gelf.Extensions.Logging
             }
         }
 
-        private IEnumerable<KeyValuePair<string, object>> GetFactoryAdditionalFields(GelfLogContext logContext)
+        private IEnumerable<KeyValuePair<string, object?>> GetFactoryAdditionalFields(GelfLogContext logContext)
         {
             return Options.AdditionalFieldsFactory?.Invoke(logContext) ??
-                   Enumerable.Empty<KeyValuePair<string, object>>();
+                   Enumerable.Empty<KeyValuePair<string, object?>>();
         }
 
-        private IEnumerable<KeyValuePair<string, object>> GetScopeAdditionalFields()
+        private IEnumerable<KeyValuePair<string, object?>> GetScopeAdditionalFields()
         {
             if (!Options.IncludeScopes)
             {
-                return Enumerable.Empty<KeyValuePair<string, object>>();
+                return Enumerable.Empty<KeyValuePair<string, object?>>();
             }
 
-            var additionalFields = new List<KeyValuePair<string, object>>();
+            var additionalFields = new List<KeyValuePair<string, object?>>();
 
             ScopeProvider?.ForEachScope((scope, state) =>
             {
                 switch (scope)
                 {
-                    case IEnumerable<KeyValuePair<string, object>> fields:
+                    case IEnumerable<KeyValuePair<string, object?>> fields:
                         state.AddRange(fields);
                         break;
                     case ValueTuple<string, string>(var key, var value):
-                        state.Add(new KeyValuePair<string, object>(key, value));
+                        state.Add(new KeyValuePair<string, object?>(key, value));
                         break;
                     case ValueTuple<string, int>(var key, var value):
-                        state.Add(new KeyValuePair<string, object>(key, value));
+                        state.Add(new KeyValuePair<string, object?>(key, value));
                         break;
                     case ValueTuple<string, long>(var key, var value):
-                        state.Add(new KeyValuePair<string, object>(key, value));
+                        state.Add(new KeyValuePair<string, object?>(key, value));
                         break;
                     case ValueTuple<string, short>(var key, var value):
-                        state.Add(new KeyValuePair<string, object>(key, value));
+                        state.Add(new KeyValuePair<string, object?>(key, value));
                         break;
                     case ValueTuple<string, decimal>(var key, var value):
-                        state.Add(new KeyValuePair<string, object>(key, value));
+                        state.Add(new KeyValuePair<string, object?>(key, value));
                         break;
                     case ValueTuple<string, double>(var key, var value):
-                        state.Add(new KeyValuePair<string, object>(key, value));
+                        state.Add(new KeyValuePair<string, object?>(key, value));
                         break;
                     case ValueTuple<string, float>(var key, var value):
-                        state.Add(new KeyValuePair<string, object>(key, value));
+                        state.Add(new KeyValuePair<string, object?>(key, value));
                         break;
                     case ValueTuple<string, uint>(var key, var value):
-                        state.Add(new KeyValuePair<string, object>(key, value));
+                        state.Add(new KeyValuePair<string, object?>(key, value));
                         break;
                     case ValueTuple<string, ulong>(var key, var value):
-                        state.Add(new KeyValuePair<string, object>(key, value));
+                        state.Add(new KeyValuePair<string, object?>(key, value));
                         break;
                     case ValueTuple<string, ushort>(var key, var value):
-                        state.Add(new KeyValuePair<string, object>(key, value));
+                        state.Add(new KeyValuePair<string, object?>(key, value));
                         break;
                     case ValueTuple<string, byte>(var key, var value):
-                        state.Add(new KeyValuePair<string, object>(key, value));
+                        state.Add(new KeyValuePair<string, object?>(key, value));
                         break;
                     case ValueTuple<string, sbyte>(var key, var value):
-                        state.Add(new KeyValuePair<string, object>(key, value));
+                        state.Add(new KeyValuePair<string, object?>(key, value));
                         break;
-                    case ValueTuple<string, object>(var key, var value):
-                        state.Add(new KeyValuePair<string, object>(key, value));
+                    case ValueTuple<string, object?>(var key, var value):
+                        state.Add(new KeyValuePair<string, object?>(key, value));
                         break;
                 }
             }, additionalFields);
@@ -164,10 +164,10 @@ namespace Gelf.Extensions.Logging
             return additionalFields;
         }
 
-        private IEnumerable<KeyValuePair<string, object>> GetStateAdditionalFields<TState>(TState state)
+        private IEnumerable<KeyValuePair<string, object?>> GetStateAdditionalFields<TState>(TState state)
         {
-            var additionalFields = state as IEnumerable<KeyValuePair<string, object>>
-                                   ?? Enumerable.Empty<KeyValuePair<string, object>>();
+            var additionalFields = state as IEnumerable<KeyValuePair<string, object?>>
+                                   ?? Enumerable.Empty<KeyValuePair<string, object?>>();
 
             foreach (var field in additionalFields)
             {
@@ -177,29 +177,29 @@ namespace Gelf.Extensions.Logging
                 }
                 else if (Options.IncludeMessageTemplates)
                 {
-                    yield return new KeyValuePair<string, object>("message_template", field.Value);
+                    yield return new KeyValuePair<string, object?>("message_template", field.Value);
                 }
             }
         }
 
-        private IEnumerable<KeyValuePair<string, object>> GetDefaultAdditionalFields(GelfLogContext logContext)
+        private IEnumerable<KeyValuePair<string, object?>> GetDefaultAdditionalFields(GelfLogContext logContext)
         {
             if (!Options.IncludeDefaultFields)
             {
                 yield break;
             }
 
-            yield return new KeyValuePair<string, object>("logger", logContext.LoggerName);
+            yield return new KeyValuePair<string, object?>("logger", logContext.LoggerName);
 
             if (logContext.Exception != null)
             {
-                yield return new KeyValuePair<string, object>("exception", logContext.Exception);
+                yield return new KeyValuePair<string, object?>("exception", logContext.Exception);
             }
 
             if (logContext.EventId != default)
             {
-                yield return new KeyValuePair<string, object>("event_id", logContext.EventId.Id);
-                yield return new KeyValuePair<string, object>("event_name", logContext.EventId.Name);
+                yield return new KeyValuePair<string, object?>("event_id", logContext.EventId.Id);
+                yield return new KeyValuePair<string, object?>("event_name", logContext.EventId.Name);
             }
         }
     }
