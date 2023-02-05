@@ -30,7 +30,7 @@ namespace Gelf.Extensions.Logging
             return Encoding.UTF8.GetString(stream.ToArray());
         }
 
-        private static void WriteAdditionalField(Utf8JsonWriter jsonWriter, KeyValuePair<string, object> field)
+        private static void WriteAdditionalField(Utf8JsonWriter jsonWriter, KeyValuePair<string, object?> field)
         {
             var key = $"_{field.Key}";
 

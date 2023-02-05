@@ -16,7 +16,7 @@ namespace Gelf.Extensions.Logging
 
         public SyslogSeverity Level { get; set; }
 
-        public IReadOnlyCollection<KeyValuePair<string, object>> AdditionalFields { get; set; } =
-            Array.Empty<KeyValuePair<string, object>>();
+        public IReadOnlyCollection<KeyValuePair<string, object?>> AdditionalFields { get; set; } =
+            Array.Empty<KeyValuePair<string, object?>>();
     }
 }

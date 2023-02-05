@@ -49,12 +49,12 @@ namespace Gelf.Extensions.Logging
         /// <summary>
         ///     Additional fields that will be attached to all log messages.
         /// </summary>
-        public Dictionary<string, object> AdditionalFields { get; set; } = new();
+        public Dictionary<string, object?> AdditionalFields { get; set; } = new();
 
         /// <summary>
         ///     Additional fields computed based on raw log data.
         /// </summary>
-        public Func<GelfLogContext, Dictionary<string, object>>? AdditionalFieldsFactory { get; set; }
+        public Func<GelfLogContext, Dictionary<string, object?>>? AdditionalFieldsFactory { get; set; }
 
         /// <summary>
         ///     Headers used when sending logs via HTTP(S).
