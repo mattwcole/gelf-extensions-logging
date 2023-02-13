@@ -54,7 +54,7 @@ namespace Gelf.Extensions.Logging
         /// <summary>
         ///     Additional fields computed based on raw log data.
         /// </summary>
-        public Func<GelfLogContext, Dictionary<string, object?>>? AdditionalFieldsFactory { get; set; }
+        public Func<GelfLogContext, IEnumerable<KeyValuePair<string, object?>>>? AdditionalFieldsFactory { get; set; }
 
         /// <summary>
         ///     Headers used when sending logs via HTTP(S).
