@@ -3,43 +3,42 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Gelf.Extensions.Logging
+namespace Gelf.Extensions.Logging;
+
+public class HttpGelfClient : IGelfClient
 {
-    public class HttpGelfClient : IGelfClient
+    private readonly HttpClient _httpClient;
+
+    public HttpGelfClient(GelfLoggerOptions options)
     {
-        private readonly HttpClient _httpClient;
-
-        public HttpGelfClient(GelfLoggerOptions options)
+        var uriBuilder = new UriBuilder
         {
-            var uriBuilder = new UriBuilder
-            {
-                Scheme = options.Protocol.ToString().ToLower(),
-                Host = options.Host,
-                Port = options.Port
-            };
+            Scheme = options.Protocol.ToString().ToLower(),
+            Host = options.Host,
+            Port = options.Port
+        };
 
-            _httpClient = new HttpClient
-            {
-                BaseAddress = uriBuilder.Uri,
-                Timeout = options.HttpTimeout
-            };
-
-            foreach (var header in options.HttpHeaders)
-            {
-                _httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
-            }
-        }
-
-        public async Task SendMessageAsync(GelfMessage message)
+        _httpClient = new HttpClient
         {
-            var content = new StringContent(message.ToJson(), Encoding.UTF8, "application/json");
-            var result = await _httpClient.PostAsync("gelf", content);
-            result.EnsureSuccessStatusCode();
-        }
+            BaseAddress = uriBuilder.Uri,
+            Timeout = options.HttpTimeout
+        };
 
-        public void Dispose()
+        foreach (var header in options.HttpHeaders)
         {
-            _httpClient.Dispose();
+            _httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
         }
+    }
+
+    public async Task SendMessageAsync(GelfMessage message)
+    {
+        var content = new StringContent(message.ToJson(), Encoding.UTF8, "application/json");
+        var result = await _httpClient.PostAsync("gelf", content);
+        result.EnsureSuccessStatusCode();
+    }
+
+    public void Dispose()
+    {
+        _httpClient.Dispose();
     }
 }

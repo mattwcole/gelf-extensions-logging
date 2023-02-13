@@ -4,62 +4,61 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Gelf.Extensions.Logging
+namespace Gelf.Extensions.Logging;
+
+public class TcpGelfClient : IGelfClient
 {
-    public class TcpGelfClient : IGelfClient
+    private readonly GelfLoggerOptions _options;
+    private TcpClient? _client;
+    private Stream? _stream;
+
+    public TcpGelfClient(GelfLoggerOptions options)
     {
-        private readonly GelfLoggerOptions _options;
-        private TcpClient? _client;
-        private Stream? _stream;
+        _options = options;
+    }
 
-        public TcpGelfClient(GelfLoggerOptions options)
+    public void Dispose()
+    {
+        _stream?.Dispose();
+        _client?.Dispose();
+    }
+
+    public async Task SendMessageAsync(GelfMessage message)
+    {
+        var messageBytes = Encoding.UTF8.GetBytes(message.ToJson() + '\0');
+        try
         {
-            _options = options;
+            var stream = GetStream(false);
+            await stream.WriteAsync(messageBytes, 0, messageBytes.Length).ConfigureAwait(true);
+            await stream.FlushAsync().ConfigureAwait(true);
         }
-
-        public void Dispose()
+        catch (IOException)
         {
-            _stream?.Dispose();
-            _client?.Dispose();
+            // Retry once on IOException (in case of OS aborted connections)
+            var stream = GetStream(true);
+            await stream.WriteAsync(messageBytes, 0, messageBytes.Length).ConfigureAwait(true);
+            await stream.FlushAsync().ConfigureAwait(true);
         }
+    }
 
-        public async Task SendMessageAsync(GelfMessage message)
+    private Stream GetStream(bool recreate)
+    {
+        if (recreate || _client == null || _stream == null || !_client.Connected)
         {
-            var messageBytes = Encoding.UTF8.GetBytes(message.ToJson() + '\0');
             try
             {
-                var stream = GetStream(false);
-                await stream.WriteAsync(messageBytes, 0, messageBytes.Length).ConfigureAwait(true);
-                await stream.FlushAsync().ConfigureAwait(true);
+                _stream?.Close();
+                _client?.Close();
             }
-            catch (IOException)
+            catch
             {
-                // Retry once on IOException (in case of OS aborted connections)
-                var stream = GetStream(true);
-                await stream.WriteAsync(messageBytes, 0, messageBytes.Length).ConfigureAwait(true);
-                await stream.FlushAsync().ConfigureAwait(true);
+                // Ignore any error during the closing of the client or stream
             }
+
+            _client = new TcpClient(_options.Host!, _options.Port);
+            _stream = _client.GetStream();
         }
 
-        private Stream GetStream(bool recreate)
-        {
-            if (recreate || _client == null || _stream == null || !_client.Connected)
-            {
-                try
-                {
-                    _stream?.Close();
-                    _client?.Close();
-                }
-                catch
-                {
-                    // Ignore any error during the closing of the client or stream
-                }
-
-                _client = new TcpClient(_options.Host!, _options.Port);
-                _stream = _client.GetStream();
-            }
-
-            return _stream;
-        }
+        return _stream;
     }
 }

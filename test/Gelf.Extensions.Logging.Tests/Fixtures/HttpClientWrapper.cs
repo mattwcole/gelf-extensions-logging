@@ -8,58 +8,57 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
-namespace Gelf.Extensions.Logging.Tests.Fixtures
+namespace Gelf.Extensions.Logging.Tests.Fixtures;
+
+public class HttpClientWrapper : IDisposable
 {
-    public class HttpClientWrapper : IDisposable
+    private readonly HttpClient _httpClient;
+
+    public HttpClientWrapper(string baseAddress, string username, string password, string clientName)
     {
-        private readonly HttpClient _httpClient;
-
-        public HttpClientWrapper(string baseAddress, string username, string password, string clientName)
+        _httpClient = new HttpClient
         {
-            _httpClient = new HttpClient
+            BaseAddress = new Uri(baseAddress),
+            DefaultRequestHeaders =
             {
-                BaseAddress = new Uri(baseAddress),
-                DefaultRequestHeaders =
-                {
-                    Authorization = new AuthenticationHeaderValue("Basic",
-                        Convert.ToBase64String(Encoding.UTF8.GetBytes($"{username}:{password}"))),
-                    Accept = {new MediaTypeWithQualityHeaderValue("application/json")}
-                }
-            };
-
-            _httpClient.DefaultRequestHeaders.Add("X-Requested-By", clientName);
-        }
-
-        public async Task<dynamic> GetAsync(string url, CancellationToken cancellation = default)
-        {
-            var response = await _httpClient.GetAsync(url, cancellation);
-            return await DeserialiseResponseAsync(response);
-        }
-
-        public async Task<dynamic> PostAsync(object value, string url, CancellationToken cancellation = default)
-        {
-            var requestJson = JsonConvert.SerializeObject(value);
-            var requestContent = new StringContent(requestJson, Encoding.UTF8, "application/json");
-
-            var response = await _httpClient.PostAsync(url, requestContent, cancellation);
-            return await DeserialiseResponseAsync(response);
-        }
-
-        private static async Task<dynamic> DeserialiseResponseAsync(HttpResponseMessage response)
-        {
-            if (response.StatusCode == HttpStatusCode.NotFound)
-            {
-                return null;
+                Authorization = new AuthenticationHeaderValue("Basic",
+                    Convert.ToBase64String(Encoding.UTF8.GetBytes($"{username}:{password}"))),
+                Accept = {new MediaTypeWithQualityHeaderValue("application/json")}
             }
+        };
 
-            response.EnsureSuccessStatusCode();
-            var responseString = await response.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<ExpandoObject>(responseString);
-        }
+        _httpClient.DefaultRequestHeaders.Add("X-Requested-By", clientName);
+    }
 
-        public void Dispose()
+    public async Task<dynamic> GetAsync(string url, CancellationToken cancellation = default)
+    {
+        var response = await _httpClient.GetAsync(url, cancellation);
+        return await DeserialiseResponseAsync(response);
+    }
+
+    public async Task<dynamic> PostAsync(object value, string url, CancellationToken cancellation = default)
+    {
+        var requestJson = JsonConvert.SerializeObject(value);
+        var requestContent = new StringContent(requestJson, Encoding.UTF8, "application/json");
+
+        var response = await _httpClient.PostAsync(url, requestContent, cancellation);
+        return await DeserialiseResponseAsync(response);
+    }
+
+    private static async Task<dynamic> DeserialiseResponseAsync(HttpResponseMessage response)
+    {
+        if (response.StatusCode == HttpStatusCode.NotFound)
         {
-            _httpClient.Dispose();
+            return null;
         }
+
+        response.EnsureSuccessStatusCode();
+        var responseString = await response.Content.ReadAsStringAsync();
+        return JsonConvert.DeserializeObject<ExpandoObject>(responseString);
+    }
+
+    public void Dispose()
+    {
+        _httpClient.Dispose();
     }
 }

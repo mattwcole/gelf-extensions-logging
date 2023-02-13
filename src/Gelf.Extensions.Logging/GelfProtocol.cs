@@ -1,10 +1,9 @@
-﻿namespace Gelf.Extensions.Logging
+﻿namespace Gelf.Extensions.Logging;
+
+public enum GelfProtocol
 {
-    public enum GelfProtocol
-    {
-        Udp,
-        Tcp,
-        Http,
-        Https
-    }
+    Udp,
+    Tcp,
+    Http,
+    Https
 }

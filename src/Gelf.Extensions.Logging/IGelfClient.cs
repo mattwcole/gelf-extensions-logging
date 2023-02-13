@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace Gelf.Extensions.Logging
+namespace Gelf.Extensions.Logging;
+
+public interface IGelfClient : IDisposable
 {
-    public interface IGelfClient : IDisposable
-    {
-        Task SendMessageAsync(GelfMessage message);
-    }
+    Task SendMessageAsync(GelfMessage message);
 }
