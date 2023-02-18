@@ -86,6 +86,7 @@ public abstract class GraylogFixture : IAsyncLifetime
             configuration = new
             {
                 bind_address = "0.0.0.0",
+                recv_buffer_size = 425984,
                 port = InputPort
             }
         };
