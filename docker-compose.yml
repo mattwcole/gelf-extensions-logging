@@ -3,8 +3,6 @@ version: "3"
 services:
   mongo:
     image: mongo:5.0.13
-    networks:
-      - graylog
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch-oss:7.10.2
     environment:
@@ -20,8 +18,6 @@ services:
       resources:
         limits:
           memory: 1g
-    networks:
-      - graylog
   graylog:
     image: graylog/graylog:5.0
     environment:
@@ -29,8 +25,6 @@ services:
       - GRAYLOG_ROOT_PASSWORD_SHA2=8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918
       - GRAYLOG_HTTP_EXTERNAL_URI=http://127.0.0.1:9000/
     entrypoint: /usr/bin/tini -- wait-for-it elasticsearch:9200 --  /docker-entrypoint.sh
-    networks:
-      - graylog
     restart: always
     depends_on:
       - mongo
@@ -42,7 +36,3 @@ services:
       - 12201:12201
       - 12201:12201/udp
       - 12202:12202
-
-networks:
-  graylog:
-    driver: bridge
