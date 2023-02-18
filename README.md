@@ -59,13 +59,9 @@ Logger options are taken from the "GELF" provider section in `appsettings.json` 
 
 For a full list of options e.g. UDP/TCP/HTTP(S) settings, see [`GelfLoggerOptions`](src/Gelf.Extensions.Logging/GelfLoggerOptions.cs). See the [samples](/samples) directory full examples. For more information on providers and logging in general, see the aspnetcore [logging documentation](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/logging).
 
-### Auto Reloading Config
-
-Settings can be changed at runtime and will be applied without the need for restarting your app. In the case of invalid config (e.g. missing hostname) the change will be ignored.
-
 ### Additional Fields
 
-By default, `logger` and `exception` fields are included on all messages (the `exception` field is only added when an exception is passed to the logger). There are a number of other ways to attach data to logs.
+By default, `logger`, `exception` and `event_id` fields are included on all messages (the `exception` field is only added when an exception is passed to the logger). There are a number of other ways to attach data to logs. These can be disabled with `GelfLoggerOptions.IncludeDefaultFields`.
 
 #### Global Fields
 
@@ -106,12 +102,11 @@ Here the message will contain `order_id` and `order_time` fields.
 It is possible to derive additional fields from log data with a factory function. This is useful for adding more information than what is provided by default e.g. the Microsoft log level or exception type.
 
 ```csharp
-options.AdditionalFieldsFactory = (logLevel, eventId, exception) =>
-    new Dictionary<string, object>
-    {
-        ["log_level"] = logLevel.ToString(),
-        ["exception_type"] = exception?.GetType().ToString()
-    };
+options.AdditionalFieldsFactory = logContext => new KeyValuePair<string, object?>[]
+{
+    new("ms_log_level", logContext.LoggerName),
+    new("exception_type", logContext.Exception?.GetType())
+};
 ```
 
 ### Log Filtering
@@ -126,6 +121,10 @@ By default UDP messages of 512 bytes or more are GZipped however this behaviour 
 
 The [Logstash GELF plugin](https://www.elastic.co/guide/en/logstash/current/plugins-inputs-gelf.html) requires entirely compressed UDP messages in which case the UDP compression threshold must be set to 0.
 
+### Auto Reloading Config
+
+Settings can be changed at runtime and will be applied without the need for restarting your app. In the case of invalid config (e.g. missing hostname) the change will be ignored.
+
 ### Testing
 
 This repository contains a Docker Compose file that can be used for creating a local Graylog stack using the [Graylog Docker image](https://hub.docker.com/r/graylog/graylog/). This can be useful for testing application logs locally. Requires [Docker](https://www.docker.com/get-docker) and Docker Compose.
@@ -137,4 +136,4 @@ This repository contains a Docker Compose file that can be used for creating a l
 
 ## Contributing
 
-Pull requests welcome! In order to run tests, first run `docker-compose up` to create the Graylog stack. Existing tests log messages and use the Graylog API to assert that they have been sent correctly. A UDP input will be created as part of the test setup (if not already present), so there is no need to create one manually. Build and tests are run on CI in Docker, meaning it is possible to run the build locally under identical conditions using `docker-compose -f docker-compose.ci.build.yml -f docker-compose.yml up --abort-on-container-exit`.
+Pull requests welcome! In order to run tests, first run `docker-compose up` to create the Graylog stack. Existing tests log messages and use the Graylog API to assert that they have been sent correctly. A UDP input will be created as part of the test setup (if not already present), so there is no need to create one manually. Build and tests are run on CI in Docker, meaning it is possible to run the build locally under identical conditions using `docker compose -f docker-compose.ci.yml run build` (this will leave graylog containers running once complete).

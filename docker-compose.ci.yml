@@ -1,0 +1,41 @@
+version: "3"
+
+services:
+  build:
+    image: mcr.microsoft.com/dotnet/sdk:7.0
+    volumes:
+      - .:/src
+    working_dir: /src
+    environment:
+      - GRAYLOG_HOST=graylog
+    command: >
+      /bin/bash -c '
+        versionArg=$$([[ ! -z "$VERSION" ]] && echo "/p:Version=$VERSION" || echo "") &&
+        dotnet build -c Release $$versionArg &&
+        dotnet test -c Release --no-build
+      '
+    depends_on:
+      - graylog
+  publish:
+    image: mcr.microsoft.com/dotnet/sdk:7.0
+    volumes:
+      - .:/src
+    working_dir: /src
+    command: >
+      /bin/bash -c '
+        versionArg=$$([[ ! -z "$VERSION" ]] && echo "/p:PackageVersion=$VERSION" || echo "") &&
+        dotnet pack src/*/Gelf.Extensions.Logging.csproj -c Release --no-build $$versionArg &&
+        dotnet nuget push src/**/Gelf.Extensions.Logging.*.nupkg -s "$NUGET_SOURCE" -k "$NUGET_API_KEY"
+      '
+  mongo:
+    extends:
+      file: docker-compose.yml
+      service: mongo
+  elasticsearch:
+    extends:
+      file: docker-compose.yml
+      service: elasticsearch
+  graylog:
+    extends:
+      file: docker-compose.yml
+      service: graylog

@@ -2,13 +2,26 @@ language: generic
 sudo: required
 services:
   - docker
+env:
+  - DOCKER_COMPOSE_VERSION=2.16.0
+before_install:
+  # Update docker
+  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+  - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+  - sudo apt-get update
+  - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
+  # Update docker compose
+  - sudo rm /usr/local/bin/docker-compose
+  - curl -L https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+  - chmod +x docker-compose
+  - sudo mv docker-compose /usr/local/bin
 script:
   - export VERSION="$TRAVIS_TAG"
-  - docker-compose -f docker-compose.ci.build.yml -f docker-compose.yml up --abort-on-container-exit
+  - docker-compose -f docker-compose.ci.yml up build --abort-on-container-exit
 deploy:
   on:
     tags: true
     all_branches: true
   skip_cleanup: true
   provider: script
-  script: docker-compose -f docker-compose.ci.publish.yml up --abort-on-container-exit
+  script: docker-compose -f docker-compose.ci.yml run publish
