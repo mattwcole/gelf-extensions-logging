@@ -31,7 +31,7 @@ namespace Gelf.Extensions.Logging.Tests.Fixtures
                 $"http://{Host}:{ApiPort}/api/", ApiUsername, ApiPassword, ApiClientName);
         }
 
-        public static string Host => Environment.GetEnvironmentVariable("GRAYLOG_HOST") ?? "localhost";
+        public static string Host => Environment.GetEnvironmentVariable("GRAYLOG_HOST") ?? "127.0.0.1";
 
         public abstract int InputPort { get; }
 

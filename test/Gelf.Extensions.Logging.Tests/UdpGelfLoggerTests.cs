@@ -43,5 +43,23 @@ namespace Gelf.Extensions.Logging.Tests
             Assert.Equal(messageText, message.message);
             Assert.Equal(6, message.level);
         }
+
+        [Fact]
+        public async Task Sends_message_chunks_larger_than_MTU()
+        {
+            var options = LoggerFixture.LoggerOptions;
+            options.CompressUdp = false;
+            options.UdpMaxChunkSize = int.MaxValue;
+            var messageText = new string('*', 1600);    // Assumes MTU under 1600 when running in Docker
+
+            using var loggerFactory = LoggerFixture.CreateLoggerFactory(options);
+            var sut = loggerFactory.CreateLogger(nameof(GelfLoggerTests));
+            sut.LogInformation(messageText);
+
+            var message = await GraylogFixture.WaitForMessageAsync();
+
+            Assert.NotEmpty(message._id);
+            Assert.Equal(messageText, message.message);
+        }
     }
 }

@@ -1,8 +1,10 @@
 version: "3"
 
 services:
+
   mongo:
     image: mongo:4.2
+
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch-oss:7.10.0
     environment:
@@ -14,6 +16,7 @@ services:
       memlock:
         soft: -1
         hard: -1
+
   graylog:
     image: graylog/graylog:4.0
     environment:
@@ -32,3 +35,14 @@ services:
       - 12201:12201
       - 12201:12201/udp
       - 12202:12202
+
+  tests:
+    profiles:
+      - tests
+    build:
+      context: .
+      dockerfile: test/Gelf.Extensions.Logging.Tests/Dockerfile
+    environment:
+      - GRAYLOG_HOST=graylog
+    depends_on:
+      - graylog

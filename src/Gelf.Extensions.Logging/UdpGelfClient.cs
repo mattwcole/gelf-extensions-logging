@@ -25,7 +25,12 @@ namespace Gelf.Extensions.Logging
         {
             _options = options;
             _maxMessageBodySize = options.UdpMaxChunkSize - MessageHeaderSize;
-            _udpClient = new UdpClient(_options.Host!, _options.Port);
+            _udpClient = new UdpClient(_options.Host!, _options.Port)
+            {
+                // Setting DontFragment to true breaks tests that send datagrams larger than the MTU
+                // Run tests in Docker to reproduce
+                // DontFragment = true
+            };
             _random = new Random();
         }
 
