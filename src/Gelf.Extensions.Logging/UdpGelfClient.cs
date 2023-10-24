@@ -25,7 +25,7 @@ namespace Gelf.Extensions.Logging
         {
             _options = options;
             _maxMessageBodySize = options.UdpMaxChunkSize - MessageHeaderSize;
-            _udpClient = new UdpClient(_options.Host!, _options.Port);
+            _udpClient = new UdpClient(_options.Host!, _options.Port) { DontFragment = false };
             _random = new Random();
         }
 
