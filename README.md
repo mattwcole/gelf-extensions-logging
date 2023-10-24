@@ -1,6 +1,6 @@
 # Gelf.Extensions.Logging [![travis](https://img.shields.io/travis/com/mattwcole/gelf-extensions-logging?style=flat-square)](https://www.travis-ci.com/github/mattwcole/gelf-extensions-logging) [![downloads](https://img.shields.io/nuget/dt/Gelf.Extensions.Logging?style=flat-square)](https://www.nuget.org/packages/Gelf.Extensions.Logging) [![nuget](https://img.shields.io/nuget/v/Gelf.Extensions.Logging.svg?style=flat-square)](https://www.nuget.org/packages/Gelf.Extensions.Logging) [![license](https://img.shields.io/github/license/mattwcole/gelf-extensions-logging.svg?style=flat-square)](https://github.com/mattwcole/gelf-extensions-logging/blob/master/LICENSE.md)
 
-[GELF](https://docs.graylog.org/en/3.1/pages/gelf.html) provider for [Microsoft.Extensions.Logging](https://docs.microsoft.com/en-us/dotnet/core/extensions/logging) for sending logs to [Graylog](https://www.graylog.org/), [Logstash](https://www.elastic.co/products/logstash) and more from .NET Standard 2.0+ compatible components.
+[GELF](https://go2docs.graylog.org/5-1/getting_in_log_data/gelf.html) provider for [Microsoft.Extensions.Logging](https://docs.microsoft.com/en-us/dotnet/core/extensions/logging) for sending logs to [Graylog](https://www.graylog.org/), [Logstash](https://www.elastic.co/products/logstash) and more from .NET Standard 2.0+ compatible components.
 
 ## Usage
 
