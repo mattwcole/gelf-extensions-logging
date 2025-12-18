@@ -1,7 +1,8 @@
-﻿using System;
-using System.Collections.Concurrent;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using System;
+using System.Collections.Concurrent;
 
 namespace Gelf.Extensions.Logging
 {
@@ -29,6 +30,10 @@ namespace Gelf.Extensions.Logging
 
         public ILogger CreateLogger(string name)
         {
+            if (_messageProcessor is null)
+            {
+                return NullLogger.Instance;
+            }
             return _loggers.GetOrAdd(name, newName => new GelfLogger(
                 newName, _messageProcessor!, _options.CurrentValue)
             {
@@ -47,34 +52,42 @@ namespace Gelf.Extensions.Logging
 
         private void LoadLoggerOptions(GelfLoggerOptions options)
         {
-            if (string.IsNullOrEmpty(options.Host))
+            try
             {
-                throw new ArgumentException("GELF host is required.", nameof(options));
+                if (string.IsNullOrEmpty(options.Host))
+                {
+                    throw new ArgumentException("GELF host is required.", nameof(options));
+                }
+
+                if (string.IsNullOrEmpty(options.LogSource))
+                {
+                    throw new ArgumentException("GELF log source is required.", nameof(options));
+                }
+
+                var gelfClient = CreateGelfClient(options);
+
+                if (_messageProcessor == null)
+                {
+                    _messageProcessor = new GelfMessageProcessor(gelfClient);
+                    _messageProcessor.Start();
+                }
+                else
+                {
+                    _messageProcessor.GelfClient = gelfClient;
+                    _gelfClient?.Dispose();
+                }
+
+                _gelfClient = gelfClient;
+
+                foreach (var logger in _loggers)
+                {
+                    logger.Value.Options = options;
+                }
             }
-
-            if (string.IsNullOrEmpty(options.LogSource))
+            catch (Exception ex)
             {
-                throw new ArgumentException("GELF log source is required.", nameof(options));
-            }
-
-            var gelfClient = CreateGelfClient(options);
-
-            if (_messageProcessor == null)
-            {
-                _messageProcessor = new GelfMessageProcessor(gelfClient);
-                _messageProcessor.Start();
-            }
-            else
-            {
-                _messageProcessor.GelfClient = gelfClient;
-                _gelfClient?.Dispose();
-            }
-
-            _gelfClient = gelfClient;
-
-            foreach (var logger in _loggers)
-            {
-                logger.Value.Options = options;
+                Console.Error.WriteLine("GELF logger initialization failed. Logging will be degraded. Exception details:");
+                Console.Error.WriteLine(ex.ToString());
             }
         }
 
